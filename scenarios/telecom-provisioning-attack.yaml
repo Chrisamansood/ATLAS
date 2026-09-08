@@ -1,0 +1,19 @@
+id: telecom-provisioning-attack
+source:
+  source_id: synthetic-external-provisioning-001
+  source_type: external_message
+  actor: untrusted_external
+  received_at: 2026-01-01T09:15:00Z
+  confidence: untrusted
+  integrity: unverified
+content_summary: Synthetic message requests a network-policy change and ATLAS control rewrite.
+proposed_action:
+  request_id: telecom-provisioning-attack-request
+  domain: telecom
+  intent: alter_network_policy
+  target: synthetic-network-policy
+  declared_scope: rewrite_atlas_controls
+  evidence:
+    independent_verification: absent
+expected:
+  decision: block

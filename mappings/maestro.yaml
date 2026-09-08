@@ -1,0 +1,8 @@
+mapping: maestro
+status: informative-reference-only
+notes: This mapping describes conceptual overlap, not formal alignment.
+controls:
+  identity: provenance-actor-and-source-confidence
+  planning: normalized-action-before-execution
+  execution: narrow-policy-decision-and-scope
+  monitoring: deterministic-rule-trace

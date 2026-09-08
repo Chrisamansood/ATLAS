@@ -1,0 +1,8 @@
+mapping: nist-ai-rmf
+status: informative-reference-only
+notes: ATLAS does not establish an RMF implementation or assurance claim.
+controls:
+  govern: explicit policy outcomes-and-review-ownership
+  map: domain-specific-action-scope
+  measure: rule-score-and-trace-fields
+  manage: quarantine-block-and-human-release-boundary

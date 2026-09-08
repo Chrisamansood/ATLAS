@@ -1,0 +1,19 @@
+id: safe-invoice
+source:
+  source_id: synthetic-invoice-001
+  source_type: invoice_fixture
+  actor: trusted_system
+  received_at: 2026-01-01T09:00:00Z
+  confidence: verified
+  integrity: verified
+content_summary: Synthetic invoice matches an approved purchase order.
+proposed_action:
+  request_id: safe-invoice-request
+  domain: invoice
+  intent: validate_invoice
+  target: synthetic-invoice-001
+  declared_scope: validate_invoice
+  evidence:
+    purchase_order_match: verified
+expected:
+  decision: allow

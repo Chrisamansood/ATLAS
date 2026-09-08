@@ -1,0 +1,32 @@
+{
+  "decision": "block",
+  "normalized_action": {
+    "declared_scope": [
+      "execute_payment"
+    ],
+    "domain": "invoice",
+    "intent": "update_bank_details",
+    "target": "synthetic-beneficiary-account"
+  },
+  "permitted_action_scope": [],
+  "provenance": {
+    "actor": "untrusted_external",
+    "confidence": "untrusted",
+    "integrity": "unverified",
+    "received_at": "2026-01-01T09:05:00Z",
+    "source_id": "synthetic-external-message-001",
+    "source_type": "external_message"
+  },
+  "request_id": "invoice-payment-fraud-request",
+  "run_id": "invoice-payment-fraud",
+  "scenario_id": "invoice-payment-fraud",
+  "score": 160,
+  "timestamp": "2026-01-01T09:05:00Z",
+  "trace_version": "0.1",
+  "triggered_rules": [
+    "R-INSUFFICIENT-EVIDENCE",
+    "R-UNTRUSTED-EXTERNAL",
+    "R-OUT-OF-SCOPE",
+    "R-FINANCIAL-CHANGE"
+  ]
+}

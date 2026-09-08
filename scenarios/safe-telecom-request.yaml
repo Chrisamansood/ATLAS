@@ -1,0 +1,19 @@
+id: safe-telecom-request
+source:
+  source_id: synthetic-service-order-001
+  source_type: service_order_fixture
+  actor: trusted_system
+  received_at: 2026-01-01T09:10:00Z
+  confidence: verified
+  integrity: verified
+content_summary: Synthetic service order requests a routine validated provisioning action.
+proposed_action:
+  request_id: safe-telecom-request
+  domain: telecom
+  intent: create_service_order
+  target: synthetic-service-001
+  declared_scope: create_service_order
+  evidence:
+    customer_authorization: verified
+expected:
+  decision: allow

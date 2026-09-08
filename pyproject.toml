@@ -1,0 +1,10 @@
+[project]
+name = "atlas-framework"
+version = "0.1.0"
+description = "A dependency-free reference trust boundary for agent actions"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = []
+
+[tool.unittest]
+testpaths = ["tests"]

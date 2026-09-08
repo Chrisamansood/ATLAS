@@ -1,0 +1,8 @@
+mapping: owasp-agentic-top-10
+status: informative-reference-only
+notes: ATLAS is not an OWASP certification or compliance claim.
+controls:
+  input-trust: provenance-and-untrusted-external-rules
+  tool-action: normalized-action-and-permitted-scope
+  human-oversight: named-review-decision
+  auditability: structured-json-and-markdown-traces
