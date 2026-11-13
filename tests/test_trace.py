@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 import tempfile
 import unittest
 from pathlib import Path
@@ -40,14 +41,8 @@ class TraceTests(unittest.TestCase):
 
     def test_review_decision_is_structured_when_present(self):
         scenario = get_scenario("safe-invoice")
+        scenario = replace(scenario, source=replace(scenario.source, integrity="unverified"))
         evaluation = evaluate(scenario)
-        evaluation = evaluation.__class__(
-            decision=evaluation.decision.QUARANTINE,
-            risk_score=evaluation.risk_score,
-            triggered_rules=evaluation.triggered_rules,
-            allowed_action_scope=evaluation.allowed_action_scope,
-            normalized_action=evaluation.normalized_action,
-        )
         review = ReviewDecision(
             review_id="review-1",
             reviewer="Ada Reviewer",
@@ -59,6 +54,22 @@ class TraceTests(unittest.TestCase):
         trace = build_trace(scenario, apply_review(evaluation, review), run_id="run-1")
         self.assertEqual(trace["review_decision"]["reviewer"], "Ada Reviewer")
         self.assertTrue(trace["review_decision"]["approved"])
+
+    def test_markdown_includes_human_review_evidence(self):
+        scenario = get_scenario("safe-invoice")
+        scenario = replace(scenario, source=replace(scenario.source, integrity="unverified"))
+        review = ReviewDecision("review-1", "Ada Reviewer", scenario.proposed_action.request_id,
+                                True, "2026-01-01T10:00:00Z", "Synthetic evidence checked")
+        trace = build_trace(scenario, apply_review(evaluate(scenario), review))
+        markdown = render_markdown(trace)
+        for evidence in ("Ada Reviewer", "review-1", "2026-01-01T10:00:00Z", "Synthetic evidence checked"):
+            self.assertIn(evidence, markdown)
+
+    def test_trace_rejects_evaluation_for_another_request(self):
+        scenario = get_scenario("safe-invoice")
+        evaluation = evaluate(get_scenario("safe-telecom-request"))
+        with self.assertRaisesRegex(ValueError, "request"):
+            build_trace(scenario, evaluation)
 
 
 if __name__ == "__main__":

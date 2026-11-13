@@ -1,4 +1,4 @@
-# ATLAS v0.1
+# ATLAS v0.1.1
 
 ## A trust boundary for agent actions in regulated systems
 
@@ -12,6 +12,9 @@ demonstration. Its tests show conformance to the policy implemented here; they
 are not evidence of proven prevention of real attacks, fraud, prompt
 injection, or telecom incidents. There are no LLM calls, hosted services,
 agent-framework integrations, payment connections, or network integrations.
+
+The current patch tightens action scope and human-review validation. See
+[project status and next steps](docs/STATUS.md) and the [changelog](CHANGELOG.md).
 
 ## Quick start
 
@@ -43,8 +46,17 @@ python -m unittest discover -s tests -v
   controls. A block cannot be released.
 
 Traces include provenance, normalized action, triggered rules, score, decision,
-permitted action scope, and review evidence when present. They do not include
+permitted action scope, and review evidence when present. An allowed scope is
+limited to the requested, supported operations; quarantine and block emit an
+empty scope. A review can release only a supported low-risk action with a valid
+scope, and must include a matching request ID, named reviewer, review ID, boolean
+approval, and timezone-aware ISO 8601 timestamp. Review evidence appears in both
+trace formats. They do not include
 hidden model reasoning or raw source content by default.
+
+Human review is available through the Python `apply_review` API; the CLI only
+evaluates scenarios. Reviewer identity and provenance remain caller-declared.
+There is no authentication service or action executor in this reference.
 
 ## Scenario pack
 

@@ -18,3 +18,18 @@ payment, alter telecom network policy, or disable/rewrite ATLAS controls.
 
 This specification complements, rather than formally certifies compliance
 with, other security and risk-management frameworks.
+
+## v0.1.1 policy clarification
+
+Allowed scopes are limited to the declared operations supported in the action's
+domain, and must include its intent. Empty, mismatched, unknown, and unsupported
+scopes quarantine. Quarantine and block emit no permitted scope. The protected
+intent categories above remain protected regardless of the declared domain.
+
+Human review must match the evaluated request ID and include a nonempty review
+ID, reviewer name, boolean approval, and timezone-aware ISO 8601 timestamp.
+Approval can release a quarantine only within the same supported low-risk scope;
+it cannot authorize unknown or protected actions, expand scope, or override a
+block. Denial retains quarantine. Both trace formats include recorded review
+evidence. These are validation rules for caller-declared evidence, not reviewer
+authentication or tamper-proof authorization.

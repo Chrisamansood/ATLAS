@@ -6,6 +6,8 @@ from .policy import Evaluation
 
 
 def build_trace(scenario: Scenario, evaluation: Evaluation, run_id: str = "run-1") -> dict[str, object]:
+    if evaluation.request_id != scenario.proposed_action.request_id:
+        raise ValueError("evaluation request_id must match the scenario request")
     trace: dict[str, object] = {
         "trace_version": "0.1",
         "run_id": run_id,
@@ -29,6 +31,18 @@ def render_markdown(trace: dict[str, object]) -> str:
     rules_text = "\n".join(f"- `{rule}`" for rule in rules) or "- None"
     provenance = trace["provenance"]
     action = trace["normalized_action"]
+    review = trace.get("review_decision")
+    review_text = ""
+    if review is not None:
+        review_text = (
+            f"\n## Human review\n\n"
+            f"- Review: `{review['review_id']}`\n"
+            f"- Reviewer: {review['reviewer']}\n"
+            f"- Request: `{review['request_id']}`\n"
+            f"- Approved: `{str(review['approved']).lower()}`\n"
+            f"- Recorded at: `{review['recorded_at']}`\n"
+            f"- Reason: {review['reason']}\n"
+        )
     return (
         f"# ATLAS Decision Trace\n\n"
         f"- Scenario: `{trace['scenario_id']}`\n"
@@ -46,6 +60,7 @@ def render_markdown(trace: dict[str, object]) -> str:
         f"- Intent: `{action['intent']}`\n"
         f"- Target: `{action['target']}`\n\n"
         f"## Triggered rules\n\n{rules_text}\n"
+        f"{review_text}"
     )
 
 
