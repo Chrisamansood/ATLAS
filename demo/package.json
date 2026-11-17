@@ -5,6 +5,7 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
+    "build:pages": "node scripts/build-pages.mjs",
     "start": "node scripts/ontology-serve.mjs",
     "test": "node --test seed/tests/*.test.mjs tests/*.test.mjs"
   }

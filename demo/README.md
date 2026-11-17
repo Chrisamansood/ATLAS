@@ -43,3 +43,31 @@ These are local demonstration APIs, not a publicly hosted service with authentic
 ## Licensing
 
 Code follows the root Apache-2.0 license. Documentation and scenario material follow the root CC-BY-4.0 documentation license. No Docker images or third-party application source trees are redistributed in this folder.
+
+## Public website
+
+[ATLAS HIVE](https://chrisamansood.github.io/ATLAS/) opens directly on HIVE.
+GitHub Actions builds and deploys `demo/dist` to GitHub Pages on pushes to main.
+Build locally with `npm --prefix demo run build:pages`; serve the output under
+`/ATLAS/` over localhost or HTTPS. Set `PAGES_BASE_PATH` for another base path.
+
+The public version runs the same synthetic routes in a module service worker.
+A small browser compatibility layer replaces Node filesystem/HTTP functions.
+Only allowlisted source and synthetic fixtures are packaged; `.runtime`, local
+credentials, original project files and research are excluded. Browser-generated
+agent tokens are simulation state, not a security boundary. MCP calls on the
+public website are browser-local simulations, not a remote integration endpoint.
+
+Sandbox changes are stored in IndexedDB in that browser profile. They survive
+reloads but are not shared across visitors or devices. Reset clears the sandbox;
+clearing site data removes all saved demo state. Browser storage and service
+workers must be allowed. There are no model API calls or hosting server costs.
+The local Node version remains available for local HTTP/MCP integration.
+
+### Website smoke checks
+
+With Playwright available, serve `demo/dist` under `/ATLAS/` and run
+`node demo/web-tests/pages.mjs`. `ATLAS_TEST_URL` selects the full website URL;
+`PLAYWRIGHT_MODULE` and `CHROME_PATH` optionally select an existing installation.
+The checks cover every navigation destination, all five themes, replay, credit
+approval, saved state, visitor isolation, API desk, and the mobile HIVE layout.
