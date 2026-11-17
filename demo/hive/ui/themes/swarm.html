@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATLAS HIVE · Co-operating System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* Paperclip dark tokens (vendor/paperclip/ui/src/index.css .dark), in hex. Mint lives only in the sphere, while it turns. */
+:root{
+  --bg:#171717; --deep:#0E0E0E; --raised:#262626; --raised-2:#333333;
+  --fg:#FAFAFA; --primary:#E5E5E5; --muted:#A1A1A1; --dim:#737373; --faint:#525252;
+  --border:rgba(255,255,255,0.10); --border-2:rgba(255,255,255,0.15);
+  --coral:#FF7E46;   /* only for "a person is needed" */
+  --mint:#36E0AD;    /* sphere only */
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:radial-gradient(ellipse 55% 55% at 50% 45%, #202020 0%, #171717 45%, #0E0E0E 100%) fixed, var(--bg);
+  color:var(--fg);font-family:'Rajdhani',sans-serif;overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg);text-transform:uppercase;}
+.eyebrow .muted{color:var(--dim);}
+.hairline{height:1px;background:linear-gradient(90deg,var(--border-2),transparent);flex:1;}
+.rh{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.rh .eyebrow{white-space:nowrap;}
+
+.stage{position:relative;height:100vh;min-height:640px;}
+.floor{position:fixed;left:0;right:0;bottom:0;height:34%;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,transparent 0 78px,rgba(255,255,255,0.035) 78px 79px),repeating-linear-gradient(0deg,transparent 0 60px,rgba(255,255,255,0.03) 60px 61px);
+  transform:perspective(420px) rotateX(62deg);transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,black,transparent 88%);mask-image:linear-gradient(to top,black,transparent 88%);}
+.sphere-box{position:absolute;inset:0;z-index:1;}
+.sphere-box canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;}
+.vp{position:fixed;width:24px;height:24px;border-color:var(--border-2);z-index:6;pointer-events:none;}
+.vp.tl{top:14px;left:14px;border-top:1px solid;border-left:1px solid;}
+.vp.tr{top:14px;right:14px;border-top:1px solid;border-right:1px solid;}
+.vp.bl{bottom:14px;left:14px;border-bottom:1px solid;border-left:1px solid;}
+.vp.br{bottom:14px;right:14px;border-bottom:1px solid;border-right:1px solid;}
+
+/* top bar */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:26px 34px 0;pointer-events:none;}
+.topbar > *{pointer-events:auto;}
+.wm{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:38px;letter-spacing:14px;line-height:1;}
+.wm-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--muted);margin-top:8px;}
+.wm-tag{font-size:15px;color:var(--dim);margin-top:2px;}
+.health{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:560px;padding-top:8px;}
+.pill{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.3px;padding:4px 9px;border:1px solid var(--border);border-radius:999px;color:var(--muted);display:flex;align-items:center;gap:6px;text-transform:uppercase;background:rgba(23,23,23,0.7);}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--primary);}
+.pill.down{color:var(--fg);border-color:rgba(255,126,70,0.45);}
+.pill.down::before{background:var(--coral);}
+.clock{text-align:right;}
+.clock .time{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:32px;letter-spacing:3px;line-height:1;}
+.clock .time small{font-size:15px;color:var(--muted);}
+.clock .date{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:3px;color:var(--dim);margin-top:5px;}
+.mode{display:inline-block;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 8px;border:1px solid var(--border-2);border-radius:4px;color:var(--fg);}
+.mode.warn{border-color:rgba(255,126,70,0.45);color:var(--coral);}
+
+/* rails */
+.rail{position:absolute;top:140px;z-index:5;width:262px;}
+.rail.l{left:34px;}
+.rail.r{right:34px;width:280px;bottom:78px;display:flex;flex-direction:column;}
+.vital{display:block;margin-bottom:18px;padding-left:12px;position:relative;transition:transform .16s;}
+.vital::before{content:'';position:absolute;left:0;top:5px;width:4px;height:4px;border-radius:50%;background:var(--muted);}
+.vital:hover{transform:translateX(3px);}
+.vital:hover .lbl{color:var(--fg);}
+.vital .vt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.vital .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;transition:color .16s;}
+.vital .dl{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dim);white-space:nowrap;}
+.vital .num{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:32px;line-height:1.05;margin-top:1px;}
+.vital .num sub{font-size:13px;color:var(--dim);font-weight:400;}
+.vital svg{width:100%;height:22px;margin-top:4px;display:block;overflow:visible;}
+.meter{height:3px;background:var(--raised);border-radius:2px;margin-top:8px;overflow:hidden;display:flex;}
+.meter i{display:block;height:100%;}
+
+.deck{display:flex;flex-direction:column;gap:12px;flex:1 1 auto;min-height:90px;overflow:auto;padding-right:4px;}
+.deck::-webkit-scrollbar{width:4px}.deck::-webkit-scrollbar-thumb{background:var(--raised-2);border-radius:2px}
+.grp .gl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px;}
+.go{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid transparent;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:all .14s;}
+.go:hover,.go:focus-visible{background:var(--raised);border-color:var(--border);color:var(--fg);outline:none;}
+.go .k{margin-left:auto;font-size:9px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:0 5px;}
+.go.off{opacity:.4;pointer-events:none;}
+.go.off .k{display:none;}
+
+.wire{margin-top:18px;flex:0 0 auto;}
+.more{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:2px;}
+.more:hover{color:var(--fg);}
+.wi{display:flex;gap:8px;margin-bottom:8px;font-size:13px;line-height:1.35;color:var(--muted);padding:4px 6px;margin-left:-6px;border-radius:6px;transition:background .14s;}
+.wi:hover{background:var(--raised);color:var(--fg);}
+.wi .c{color:var(--coral);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:2px;}
+.wi .kd{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;}
+.empty{font-size:13px;color:var(--dim);}
+
+/* hero */
+.hero{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:5;text-align:center;}
+.hero a{display:block;}
+.hero .hl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--muted);}
+.hero .hl b{color:var(--coral);font-weight:500;}
+.hero .hn{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:80px;line-height:.95;margin-top:4px;transition:text-shadow .3s;}
+.hero a:hover .hn{text-shadow:0 0 24px rgba(255,255,255,0.25);}
+.hero .hn .unit{font-size:20px;color:var(--muted);letter-spacing:5px;margin-left:10px;}
+.hero .bar{width:520px;max-width:80vw;height:1px;background:var(--border);margin:12px auto 0;position:relative;}
+.hero .bar::before{content:'';position:absolute;left:0;top:0;height:100%;width:var(--fill,50%);background:linear-gradient(90deg,var(--primary),transparent);transition:width .6s;}
+.hero .hf{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.8px;color:var(--dim);margin-top:12px;text-transform:uppercase;}
+.hero .hf b{color:var(--fg);font-weight:500;}
+
+.foot{position:absolute;bottom:26px;z-index:5;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.8px;color:var(--dim);text-transform:uppercase;}
+.foot.l{left:34px;}
+.foot.r{right:34px;text-align:right;}
+.foot kbd{font-family:inherit;border:1px solid var(--border);border-radius:3px;padding:0 4px;color:var(--muted);}
+.spin-track{width:120px;height:2px;background:var(--raised);margin:6px 0 0 auto;border-radius:2px;overflow:hidden;}
+.spin-fill{height:100%;width:0;background:var(--mint);}
+
+#tip{position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-150%);
+  background:rgba(23,23,23,0.96);border:1px solid var(--border-2);border-radius:6px;padding:7px 11px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1px;white-space:nowrap;}
+#tip small{display:block;color:var(--dim);font-size:9px;margin-top:2px;}
+
+/* command palette */
+#pal{position:fixed;inset:0;z-index:20;background:rgba(10,10,10,0.6);display:none;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#pal.open{display:flex;}
+.cmdk{width:min(600px,calc(100vw - 32px));border:1px solid var(--border-2);border-radius:10px;overflow:hidden;background:var(--bg);box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+.cmdk .in{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:14px;}
+.cmdk .in .p{color:var(--dim);}
+.cmdk input{flex:1;background:transparent;border:none;outline:none;color:var(--fg);font:inherit;}
+.cmdk kbd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:1px 6px;}
+.cmdk .rows{max-height:50vh;overflow:auto;}
+.cmdk .row{display:flex;justify-content:space-between;gap:16px;padding:10px 16px;font-size:15px;color:var(--muted);cursor:pointer;}
+.cmdk .row.on{background:var(--raised);color:var(--fg);}
+.cmdk .row span:last-child{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.cmdk .row.human span:last-child{color:var(--coral);}
+
+/* narrow screens: one column, page scrolls */
+@media (max-width:1100px){
+  body{overflow:auto;}
+  .stage{height:auto;min-height:0;display:flex;flex-direction:column;padding:0 16px 40px;}
+  .topbar{position:relative;padding:22px 0 0;flex-wrap:wrap;order:1;}
+  .clock{text-align:left;}
+  .health{order:3;width:100%;max-width:none;justify-content:flex-start;}
+  .sphere-box{position:relative;inset:auto;height:420px;margin-top:8px;order:2;}
+  .hero{position:relative;left:auto;bottom:auto;transform:none;order:3;}
+  .rail{position:relative;top:auto;bottom:auto!important;left:auto!important;right:auto!important;width:auto!important;margin-top:36px;}
+  .rail.r{order:4;} .rail.l{order:5;}
+  .deck{max-height:none;}
+  .foot{display:none;}
+  .vp{display:none;}
+}
+@media (max-width:520px){
+  .wm{font-size:28px;letter-spacing:9px;}
+  .clock .time{font-size:24px;}
+  .hero .hn{font-size:60px;}
+  .sphere-box{height:340px;}
+}
+@media (min-width:901px) and (max-height:800px){body{overflow-y:auto}.stage{min-height:800px}}
+</style>
+</head>
+<body>
+<div class="floor"></div>
+<div class="vp tl"></div><div class="vp tr"></div><div class="vp bl"></div><div class="vp br"></div>
+
+<main class="stage">
+  <div class="sphere-box" id="box"><canvas id="sphere" aria-label="Sphere of the platform's subsystems; click a node to open it"></canvas></div>
+
+  <header class="topbar">
+    <div>
+      <div class="wm">ATLAS</div>
+      <div class="wm-sub">HIVE · PROVING GROUND</div>
+      <div class="wm-tag">where agents and humans work as one</div>
+    </div>
+    <div class="health" id="health"></div>
+    <div class="clock">
+      <div class="time" id="clock">--:--<small>:--</small></div>
+      <div class="date" id="date">—</div>
+      <div class="mode" id="mode">● CONNECTING</div>
+    </div>
+  </header>
+
+  <aside class="rail l">
+    <div class="rh"><span class="eyebrow">VITALS <span class="muted" id="orgName">ORG.LINK</span></span><span class="hairline"></span></div>
+    <div id="vitals"></div>
+  </aside>
+
+  <aside class="rail r">
+    <div class="rh"><span class="eyebrow">LAUNCH DECK <span class="muted">1–9 · ⌘K</span></span><span class="hairline"></span></div>
+    <nav class="deck" id="deck"></nav>
+    <div class="wire">
+      <div class="rh"><span class="eyebrow">AWAITING A HUMAN <span class="muted" id="wireCount"></span></span><span class="hairline"></span></div>
+      <div id="wire"><div class="empty">Loading…</div></div>
+    </div>
+  </aside>
+
+  <section class="hero">
+    <a id="heroLink" href="#">
+      <div class="hl">DECISIONS <b>AWAITING A HUMAN</b></div>
+      <div class="hn"><span id="heroNum">–</span><span class="unit">OPEN</span></div>
+    </a>
+    <div class="bar" id="heroBar"></div>
+    <div class="hf" id="heroFoot"></div>
+  </section>
+
+  <div class="foot l">Drag to spin · <kbd>⌘K</kbd> search · <kbd>1</kbd>–<kbd>9</kbd> jump</div>
+  <div class="foot r"><span id="updated">—</span> · Signal <span id="spinVal">0%</span><div class="spin-track"><div class="spin-fill" id="spinFill"></div></div></div>
+</main>
+
+<div id="tip"></div>
+<div id="pal" role="dialog" aria-label="Search">
+  <div class="cmdk">
+    <div class="in"><span class="p">hive&gt;</span><input id="palIn" placeholder="Jump to a page or a decision" autocomplete="off"><kbd>ESC</kbd></div>
+    <div class="rows" id="palRows"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════ DATA ══════════ */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (n) => Number(n ?? 0).toLocaleString("en-GB");
+const money = (c) => "$" + (Number(c ?? 0) / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const KIT = { sim: "Agent Builder 1", langflow: "Agent Builder 2", claude_code: "Claude Code", codex: "Codex" };
+// Number keys: the pages a presenter jumps to most, by launch-deck key.
+const HOTKEYS = ["org", "builder", "langflow", "live", "catalogue", "office", "decisions", "ontology", "approvals"];
+let state = null, lastPulse = null;
+
+function spark(runs) {
+  if (!runs?.length) return "";
+  const max = Math.max(1, ...runs.map((r) => r.total)), step = 120 / Math.max(1, runs.length - 1);
+  const pts = runs.map((r, i) => `${(i * step).toFixed(1)},${(20 - (r.total / max) * 18).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 120 22" preserveAspectRatio="none"><polyline fill="none" stroke="#A1A1A1" stroke-width="1.3" points="${pts}"/></svg>`;
+}
+const meter = (parts) => `<div class="meter">${parts.map(([v, col]) => `<i style="width:${Math.max(0, Math.min(100, v))}%;background:${col}"></i>`).join("")}</div>`;
+const vital = (href, label, delta, num, extra) =>
+  `<a class="vital" href="${esc(href ?? "#")}"><div class="vt"><span class="lbl">${label}</span><span class="dl">${delta}</span></div><div class="num">${num}</div>${extra}</a>`;
+
+function render(d) {
+  state = d;
+  const o = d.org, down = !!o.down;
+  // health and mode
+  $("health").innerHTML = d.services.map((s) => `<span class="pill${s.ok ? "" : " down"}" title="${s.ok ? "Up" : "Not answering"}">${esc(s.label)}</span>`).join("");
+  const modeText = { live: "● LIVE", partial: "● PARTIAL", snapshot: "◌ SNAPSHOT", offline: "○ OFFLINE" }[d.mode];
+  $("mode").textContent = modeText; $("mode").className = "mode" + (d.mode === "live" ? "" : " warn");
+  $("orgName").textContent = down ? "ORG OFFLINE" : (o.company ?? "ORG").toUpperCase();
+  const when = new Date(o.stale && o.savedAt ? o.savedAt : d.asOf);
+  $("updated").textContent = (o.stale && !down ? "Snapshot " : "Updated ") + when.toLocaleTimeString("en-GB");
+
+  // vitals
+  const org = d.links.org;
+  const runsTotal = (o.runs ?? []).reduce((a, r) => a + r.total, 0);
+  $("vitals").innerHTML = down ? `<div class="empty">The organization is not answering and no snapshot exists yet.</div>` + twinVital(d) : [
+    vital(org && `/organization`, "Agents active", `${fmt(o.agents.running)} running`, `${fmt(o.agents.active)}<sub> / ${fmt(o.agents.total)} seats</sub>`,
+      meter([[o.agents.running / Math.max(1, o.agents.total) * 100, "#FAFAFA"], [(o.agents.active - o.agents.running) / Math.max(1, o.agents.total) * 100, "#737373"]])),
+    vital(org && `/twin/live#sandbox`, "Tasks open", o.tasks.blocked ? `${fmt(o.tasks.blocked)} blocked` : `${fmt(o.tasks.done)} done`, `${fmt(o.tasks.open + o.tasks.inProgress)}`,
+      meter(((t) => { const all = Math.max(1, t.open + t.inProgress + t.blocked + t.done); return [[t.inProgress / all * 100, "#FAFAFA"], [t.open / all * 100, "#A1A1A1"], [t.blocked / all * 100, "#525252"]]; })(o.tasks))),
+    vital(org && `/organization`, "Agent runs · 14 days", `${fmt(o.runs.at(-1)?.total ?? 0)} today`, fmt(runsTotal), spark(o.runs)),
+    vital(org && `/organization`, "Spend this month", o.spend.budgetCents ? `cap ${money(o.spend.budgetCents)}` : "no cap set", money(o.spend.monthCents),
+      o.spend.budgetCents ? meter([[o.spend.monthCents / o.spend.budgetCents * 100, "#FAFAFA"]]) : ""),
+    twinVital(d),
+  ].join("");
+
+  // launch deck
+  let k = 0;
+  const keyOf = {}; HOTKEYS.forEach((key, i) => (keyOf[key] = i + 1));
+  $("deck").innerHTML = d.sections.map((s) => `<div class="grp"><div class="gl">${esc(s.label)}</div>${s.items.map((i) =>
+    `<a class="go${i.href ? "" : " off"}" href="${esc(i.href ?? "#")}" data-key="${esc(i.key)}">${esc(i.label)}${keyOf[i.key] ? `<span class="k">${keyOf[i.key]}</span>` : ""}</a>`).join("")}</div>`).join("");
+
+  // wire, hero
+  const items = down ? [] : o.attention.items;
+  $("wireCount").textContent = down ? "" : `${fmt(o.attention.total)} OPEN`;
+  const shown = items.slice(0, 3), rest = down ? 0 : o.attention.total - shown.length;
+  $("wire").innerHTML = items.length ? shown.map((i) =>
+    `<a class="wi" href="${esc(org ? i.href : "#")}"><span class="c">◆</span><span><span class="kd">${esc(i.kind.replace(/_/g, " "))}</span>${esc(i.title)}</span></a>`).join("")
+    + (rest > 0 ? `<a class="more" href="${esc(org ? `/twin/live#sandbox` : "#")}">+ ${fmt(rest)} more in the inbox →</a>` : "")
+    : `<div class="empty">${down ? "Unknown while the organization is offline." : "Nothing waiting. The hive is clear."}</div>`;
+  $("heroNum").textContent = down ? "–" : fmt(o.attention.total);
+  $("heroLink").href = org ? `/twin/live#sandbox` : "#";
+  $("heroBar").style.setProperty("--fill", down ? "0%" : Math.min(100, o.attention.total * 8) + "%");
+  const kits = d.kits.map((x) => `${KIT[x.kit] ?? x.kit} <b>${x.count}</b>`).join(" · ");
+  $("heroFoot").innerHTML = `<span>Agents <b>${down ? "–" : fmt(o.agents.active) + " active"}</b></span><span>Kits ${kits}</span><span>Twin <b>${fmt(d.twin.customers)} subs</b></span>`;
+
+  // something happened in the org: spin the sphere
+  if (!down && lastPulse !== null && o.pulse !== lastPulse) burst(1);
+  if (!down) lastPulse = o.pulse;
+  NODES.forEach((n) => (n.href = n.link(d)));
+}
+function twinVital(d) {
+  return vital("/twin/live", "Digital twin", `${fmt(d.twin.drafts)} drafts`, `${fmt(d.twin.customers)}<sub> subs · ${fmt(d.twin.offers)} offers</sub>`, "");
+}
+
+async function load() {
+  try { render(await (await fetch("/data/hive.json", { cache: "no-store" })).json()); }
+  catch { $("mode").textContent = "○ OFFLINE"; $("mode").className = "mode warn"; }
+}
+load(); setInterval(load, 10000);
+
+/* ══════════ CLOCK ══════════ */
+function tick() {
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  $("clock").innerHTML = `${p(d.getHours())}:${p(d.getMinutes())}<small>:${p(d.getSeconds())}</small>`;
+  $("date").textContent = d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase().replace(/,/g, " ·");
+}
+tick(); setInterval(tick, 1000);
+
+/* ══════════ COMMAND PALETTE + KEYS ══════════ */
+let palItems = [], palSel = 0;
+function palData() {
+  if (!state) return [];
+  const pages = state.sections.flatMap((s) => s.items.filter((i) => i.href).map((i) => ({ label: i.label, tag: s.label, href: i.href })));
+  const asks = state.org.down || !state.links.org ? [] : state.org.attention.items.map((i) => ({ label: i.title, tag: "awaiting human", href: i.href, human: true }));
+  return [...pages, ...asks];
+}
+function palDraw() {
+  const q = $("palIn").value.trim().toLowerCase();
+  palItems = palData().filter((i) => !q || q.split(/\s+/).every((w) => (i.label + " " + i.tag).toLowerCase().includes(w)));
+  palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+  $("palRows").innerHTML = palItems.map((i, n) => `<div class="row${n === palSel ? " on" : ""}${i.human ? " human" : ""}" data-n="${n}"><span>${esc(i.label)}</span><span>${esc(i.tag)}</span></div>`).join("")
+    || `<div class="row"><span>No match</span><span></span></div>`;
+}
+const palOpen = () => { $("pal").classList.add("open"); $("palIn").value = ""; palSel = 0; palDraw(); $("palIn").focus(); };
+const palClose = () => $("pal").classList.remove("open");
+const go = (href, e) => { if (!href) return; if (e?.metaKey || e?.ctrlKey) window.open(href, "_blank"); else location.href = href; };
+$("palIn").addEventListener("input", () => { palSel = 0; palDraw(); });
+$("palRows").addEventListener("click", (e) => { const r = e.target.closest("[data-n]"); if (r) go(palItems[+r.dataset.n]?.href, e); });
+$("pal").addEventListener("click", (e) => { if (e.target.id === "pal") palClose(); });
+addEventListener("keydown", (e) => {
+  const open = $("pal").classList.contains("open");
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); open ? palClose() : palOpen(); return; }
+  if (open) {
+    if (e.key === "Escape") palClose();
+    else if (e.key === "ArrowDown") { palSel = Math.min(palItems.length - 1, palSel + 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { palSel = Math.max(0, palSel - 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "Enter") go(palItems[palSel]?.href, e);
+    return;
+  }
+  if (e.target.matches?.("input,textarea")) return;
+  if (e.key === "/") { e.preventDefault(); palOpen(); return; }
+  if (/^[1-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    const a = document.querySelector(`.go[data-key="${HOTKEYS[+e.key - 1]}"]`);
+    if (a && !a.classList.contains("off")) go(a.href, e);
+  }
+});
+
+/* ══════════ SWARM SPHERE ══════════
+   Graphite and white at rest. Spin energy comes from an idle cycle, a drag, or new activity in the org,
+   and it alone drives the mint. */
+const cv = $("sphere"), c = cv.getContext("2d"), box = $("box"), tip = $("tip");
+let W = 0, H = 0, CX = 0, CY = 0, R = 0;
+function fit() {
+  const r = box.getBoundingClientRect(), d = devicePixelRatio || 1; W = r.width; H = r.height;
+  cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0);
+  const wide = W > 1100; CX = W / 2; CY = wide ? H * 0.44 : H * 0.5; R = wide ? Math.min(W * 0.5, H) * 0.3 : Math.min(W, H) * 0.32;
+}
+new ResizeObserver(fit).observe(box); fit();
+
+const NODES = [
+  { label: "ORGANIZATION", sub: "Agents · tasks · approvals", lat: 0.72, lon: 0.3, link: (d) => d.links.org && `/organization` },
+  { label: "BUILDERS", sub: "Agent Builder 1 · 2", lat: 0.22, lon: 1.6, link: (d) => d.links.sim },
+  { label: "DIGITAL TWIN", sub: "Live events · bills", lat: 0.18, lon: 3.1, link: () => "/twin/live" },
+  { label: "DECISIONS", sub: "Engine economics", lat: -0.22, lon: 4.4, link: () => "/decisions" },
+  { label: "ONTOLOGY", sub: "Telco · banking · health", lat: -0.38, lon: 5.6, link: () => "/" },
+  { label: "CATALOGUE", sub: "Offers · drafts · scans", lat: -0.78, lon: 2.3, link: () => "/twin/catalogue" },
+];
+NODES.forEach((n) => { const cl = Math.cos(n.lat); n.x = cl * Math.cos(n.lon); n.y = Math.sin(n.lat); n.z = cl * Math.sin(n.lon); });
+
+const N = 700, pts = [];
+for (let i = 0; i < N; i++) {
+  const y = 1 - (i / (N - 1)) * 2, rad = Math.sqrt(1 - y * y), th = i * 2.399963;
+  const p = { x: Math.cos(th) * rad, y, z: Math.sin(th) * rad, tw: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8 };
+  let best = 0, bd = 9; NODES.forEach((n, k) => { const dd = (n.x - p.x) ** 2 + (n.y - p.y) ** 2 + (n.z - p.z) ** 2; if (dd < bd) { bd = dd; best = k; } });
+  p.n = best; p.prox = Math.max(0, 1 - bd / 0.9); pts.push(p);
+}
+const dust = [];
+for (let i = 0; i < 300; i++) { const r = Math.pow(Math.random(), 1.6), th = Math.random() * 6.28, ph = Math.acos(2 * Math.random() - 1);
+  dust.push({ x: Math.sin(ph) * Math.cos(th) * r, y: Math.cos(ph) * r, z: Math.sin(ph) * Math.sin(th) * r, tw: Math.random() * 6.28 }); }
+
+const BASE = 0.0012, VMAX = 0.035;
+let rot = 0, vel = BASE, kick = 0, dragging = false, moved = false, lastX = 0, mouse = { x: -9999, y: -9999 }, hovered = null;
+function burst(strength) { kick = Math.max(kick, VMAX * 0.8 * strength); }
+cv.addEventListener("mousemove", (e) => { const r = box.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+  if (dragging) { const dx = e.clientX - lastX; if (Math.abs(dx) > 2) moved = true; kick = Math.max(-VMAX, Math.min(VMAX, dx * 0.0022)); lastX = e.clientX; } });
+cv.addEventListener("mouseleave", () => { mouse.x = mouse.y = -9999; dragging = false; });
+cv.addEventListener("mousedown", (e) => { dragging = true; moved = false; lastX = e.clientX; });
+addEventListener("mouseup", () => { dragging = false; });
+cv.addEventListener("click", (e) => { if (hovered && !moved) go(hovered.href, e); });
+
+// idle cycle (0 rest .. 1 full spin), 20 s loop so the mint stays an event, not wallpaper
+function cycle(t) { const p = (t % 20) / 20, ease = (x) => x * x * (3 - 2 * x);
+  if (p < 0.55) return 0; if (p < 0.63) return ease((p - 0.55) / 0.08); if (p < 0.78) return 1; if (p < 0.92) return 1 - ease((p - 0.78) / 0.14); return 0; }
+const mix = (a, b, k) => a + (b - a) * k;
+const col = (e, a) => `rgba(${Math.round(mix(228, 54, e))},${Math.round(mix(228, 224, e))},${Math.round(mix(228, 173, e))},${a})`;
+const proj = (x, y, z, ry) => { const cr = Math.cos(ry), sr = Math.sin(ry); const X = x * cr - z * sr, Z = x * sr + z * cr; const pr = 1 / (1 + Z * 0.35); return [CX + X * R * pr, CY + y * R * pr, Z, pr]; };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function frame(ms) {
+  const t = ms * 0.001;
+  const target = reduceMotion ? BASE * 0.4 : BASE + cycle(t) * (VMAX * 0.75 - BASE);
+  kick *= 0.965;
+  vel += ((Math.abs(kick) > Math.abs(target) ? kick : target) - vel) * 0.06;
+  rot += vel;
+  const E = Math.min(1, Math.max(0, (Math.abs(vel) - BASE) / (VMAX * 0.7)));
+  $("spinVal").textContent = Math.round(E * 100) + "%"; $("spinFill").style.width = E * 100 + "%";
+  c.clearRect(0, 0, W, H);
+
+  const g = c.createRadialGradient(CX, CY, 0, CX, CY, R * 1.25);
+  g.addColorStop(0, col(E, 0.10 + 0.14 * E)); g.addColorStop(0.45, col(E, 0.03 + 0.06 * E)); g.addColorStop(1, col(E, 0));
+  c.fillStyle = g; c.beginPath(); c.arc(CX, CY, R * 1.25, 0, 6.28); c.fill();
+  c.beginPath(); c.ellipse(CX, CY, R * 1.14, R * 0.16, 0, 0, 6.28); c.strokeStyle = col(E, 0.06 + 0.22 * E); c.lineWidth = 1; c.stroke();
+
+  dust.forEach((d) => { const [sx, sy, Z, pr] = proj(d.x, d.y, d.z, rot * 1.4);
+    const a = (0.2 + 0.5 * ((Z + 1) / 2)) * (0.5 + 0.5 * Math.sin(t * 2 + d.tw)); c.fillStyle = col(E * 0.9, a * 0.8); c.fillRect(sx, sy, 1.3 * pr, 1.3 * pr); });
+
+  const busy = NODES.map((n, i) => Math.max(0, Math.sin(t * 0.35 + i * 1.3)));
+  const P = pts.map((p) => { const n = NODES[p.n], k = busy[p.n] * p.prox * 0.5;
+    let x = p.x + (n.x - p.x) * k, y = p.y + (n.y - p.y) * k, z = p.z + (n.z - p.z) * k; const L = Math.hypot(x, y, z);
+    const a = proj(x / L, y / L, z / L, rot), b = proj(x / L, y / L, z / L, rot - vel * 9);
+    return { p, sx: a[0], sy: a[1], Z: a[2], pr: a[3], tx: b[0], ty: b[1], hot: busy[p.n] * p.prox }; });
+
+  c.lineWidth = 0.5;
+  for (let i = 0; i < P.length; i += 3) { const a = P[i];
+    for (let j = i + 1; j < i + 7 && j < P.length; j++) { const b = P[j], dx = a.sx - b.sx, dy = a.sy - b.sy, dd = dx * dx + dy * dy;
+      if (dd < 3000) { c.strokeStyle = col(E, (1 - dd / 3000) * (0.07 + 0.12 * E) * ((a.Z + b.Z) / 2 + 1) / 2); c.beginPath(); c.moveTo(a.sx, a.sy); c.lineTo(b.sx, b.sy); c.stroke(); } } }
+
+  P.forEach((q) => { const depth = (q.Z + 1) / 2, tw = 0.55 + 0.45 * Math.sin(t * q.p.sp + q.p.tw);
+    const e = Math.min(1, E * (0.55 + 0.45 * depth) + E * q.hot * 0.3), a = (0.18 + depth * 0.62) * tw;
+    if (E > 0.05 && q.Z > -0.2) { c.strokeStyle = col(e, a * 0.55 * E); c.lineWidth = (0.6 + depth) * q.pr; c.beginPath(); c.moveTo(q.tx, q.ty); c.lineTo(q.sx, q.sy); c.stroke(); }
+    c.fillStyle = col(e, a); c.beginPath(); c.arc(q.sx, q.sy, (0.7 + depth * 1.5) * q.pr, 0, 6.28); c.fill(); });
+
+  hovered = null; const labels = [];
+  NODES.map((n) => ((n._p = proj(n.x, n.y, n.z, rot)), n)).sort((a, b) => b._p[2] - a._p[2]).forEach((n) => {
+    const [sx, sy, Z] = n._p; if (Z < -0.15) return;
+    const depth = (Z + 1) / 2, isH = Math.hypot(mouse.x - sx, mouse.y - sy) < 16; if (isH && !hovered) hovered = n; n._sx = sx; n._sy = sy;
+    const r = isH ? 6.5 : 4.2;
+    const gg = c.createRadialGradient(sx, sy, 0, sx, sy, r * 3.4); gg.addColorStop(0, col(E, 0.55 * depth + 0.2)); gg.addColorStop(1, col(E, 0));
+    c.fillStyle = gg; c.beginPath(); c.arc(sx, sy, r * 3.4, 0, 6.28); c.fill();
+    c.fillStyle = `rgba(250,250,250,${0.6 + 0.4 * depth})`; c.beginPath(); c.arc(sx, sy, r * 0.62, 0, 6.28); c.fill();
+    if (isH) { c.strokeStyle = "rgba(250,250,250,0.9)"; c.lineWidth = 1.2; c.beginPath(); c.arc(sx, sy, r + 4, 0, 6.28); c.stroke(); }
+    // nearest nodes label first; a label that would collide with one already drawn is skipped
+    c.font = "500 9.5px 'JetBrains Mono'"; const lw = c.measureText(n.label).width, lx = sx + 12;
+    if (labels.some((b) => lx < b.x + b.w + 6 && lx + lw + 6 > b.x && Math.abs(sy - b.y) < 14)) return;
+    labels.push({ x: lx, y: sy, w: lw });
+    c.textAlign = "left"; c.fillStyle = `rgba(161,161,161,${0.35 + 0.65 * depth})`; c.fillText(n.label, lx, sy + 3);
+  });
+
+  if (hovered) { const r = box.getBoundingClientRect(); tip.style.display = "block"; tip.style.left = r.left + hovered._sx + "px"; tip.style.top = r.top + hovered._sy + "px";
+    tip.innerHTML = `${hovered.label}<small>${hovered.sub} · ${hovered.href ? "click to open" : "not reachable"}</small>`; cv.style.cursor = hovered.href ? "pointer" : "not-allowed"; }
+  else { tip.style.display = "none"; cv.style.cursor = dragging ? "grabbing" : "grab"; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

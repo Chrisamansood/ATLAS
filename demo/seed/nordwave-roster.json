@@ -1,0 +1,455 @@
+{
+  "company": {
+    "name": "ATLAS AI Labs",
+    "description": "ATLAS AI Labs AI workforce: Marketing, Care, Operations, Billing, Network and Governance agents on ATLAS BSS."
+  },
+  "agents": [
+    {
+      "key": "ops-lead",
+      "name": "ATLAS AI Labs Agent Operations Lead",
+      "title": "Head of AI Operations",
+      "role": "ceo",
+      "department": "Executive",
+      "reportsTo": null,
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "agent workforce"
+      ],
+      "capabilities": "Sets goals for the agent workforce, approves new agents, owns the budget."
+    },
+    {
+      "key": "head-commercial",
+      "name": "Marketing Lead Agent",
+      "title": "Head of Marketing Agents",
+      "role": "general",
+      "department": "Marketing",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product offering"
+      ],
+      "capabilities": "Coordinates catalogue, pricing and offer agents."
+    },
+    {
+      "key": "catalogue",
+      "name": "Catalogue Agent",
+      "title": "Agentic Product Catalogue (Catalogue Team)",
+      "role": "engineer",
+      "department": "Marketing",
+      "reportsTo": "head-commercial",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product offering",
+        "product specification",
+        "catalogue release"
+      ],
+      "capabilities": "Drafts a new offer from a brief, checks catalogue rules, proposes it for release."
+    },
+    {
+      "key": "offer-designer",
+      "name": "Offer Designer Agent",
+      "title": "Offer Designer",
+      "role": "engineer",
+      "department": "Marketing",
+      "reportsTo": "head-commercial",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product offering",
+        "bundle"
+      ],
+      "capabilities": "Designs offer variants for a segment. Awaiting API."
+    },
+    {
+      "key": "pricing-analyst",
+      "name": "Pricing Analyst Agent",
+      "title": "Pricing Analyst",
+      "role": "engineer",
+      "department": "Marketing",
+      "reportsTo": "head-commercial",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product offering price"
+      ],
+      "capabilities": "Compares price points; numbers come from the rating engine. Awaiting API."
+    },
+    {
+      "key": "bundle-optimiser",
+      "name": "Bundle Optimiser Agent",
+      "title": "Bundle Optimiser",
+      "role": "engineer",
+      "department": "Marketing",
+      "reportsTo": "head-commercial",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "bundle"
+      ],
+      "capabilities": "Suggests bundle changes for converged customers. Awaiting API."
+    },
+    {
+      "key": "partner-offers",
+      "name": "Partner Offers Agent",
+      "title": "Partner Offers",
+      "role": "engineer",
+      "department": "Marketing",
+      "reportsTo": "head-commercial",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "partner product"
+      ],
+      "capabilities": "Manages partner add-ons (streaming, insurance). Awaiting API."
+    },
+    {
+      "key": "head-care",
+      "name": "Care Lead Agent",
+      "title": "Head of Care Agents",
+      "role": "general",
+      "department": "Care",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "customer problem"
+      ],
+      "capabilities": "Coordinates care agents and approves escalations."
+    },
+    {
+      "key": "bill-shock",
+      "name": "Bill Shock Agent",
+      "title": "Care: Bill Shock",
+      "role": "engineer",
+      "department": "Care",
+      "reportsTo": "head-care",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "bill shock",
+        "customer bill",
+        "goodwill credit"
+      ],
+      "capabilities": "Explains a surprise bill and proposes a goodwill credit within policy (cap 25 EUR)."
+    },
+    {
+      "key": "complaints-triage",
+      "name": "Complaints Triage Agent",
+      "title": "Complaints Triage",
+      "role": "engineer",
+      "department": "Care",
+      "reportsTo": "head-care",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "trouble ticket"
+      ],
+      "capabilities": "Classifies and routes complaints. Awaiting API."
+    },
+    {
+      "key": "plan-advisor",
+      "name": "Plan Advisor Agent",
+      "title": "Plan Advisor",
+      "role": "engineer",
+      "department": "Care",
+      "reportsTo": "head-care",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product offering",
+        "usage"
+      ],
+      "capabilities": "Recommends a better-fitting plan from usage. Awaiting API."
+    },
+    {
+      "key": "retention",
+      "name": "Retention Agent",
+      "title": "Care: Retention",
+      "role": "engineer",
+      "department": "Care",
+      "reportsTo": "head-care",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "churn risk",
+        "retention offer"
+      ],
+      "capabilities": "Spots at-risk subscribers and proposes save offers; prices from the rating engine."
+    },
+    {
+      "key": "collections",
+      "name": "Collections Nudger Agent",
+      "title": "Collections Nudger",
+      "role": "engineer",
+      "department": "Care",
+      "reportsTo": "head-care",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "dunning"
+      ],
+      "capabilities": "Sends payment reminders within policy. Awaiting API."
+    },
+    {
+      "key": "head-orders",
+      "name": "Operations Lead Agent",
+      "title": "Head of Operations Agents",
+      "role": "general",
+      "department": "Operations",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product order"
+      ],
+      "capabilities": "Coordinates order agents."
+    },
+    {
+      "key": "order-activation",
+      "name": "Order-to-Activation Agent",
+      "title": "Order to Activation",
+      "role": "engineer",
+      "department": "Operations",
+      "reportsTo": "head-orders",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "product order",
+        "order fallout",
+        "service activation"
+      ],
+      "capabilities": "Watches stuck orders, diagnoses fallout, proposes a fix or re-submit."
+    },
+    {
+      "key": "number-porting",
+      "name": "Number Porting Agent",
+      "title": "Number Porting",
+      "role": "engineer",
+      "department": "Operations",
+      "reportsTo": "head-orders",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "number portability"
+      ],
+      "capabilities": "Tracks port-in and port-out requests. Awaiting API."
+    },
+    {
+      "key": "esim-provisioning",
+      "name": "SIM and eSIM Provisioning Agent",
+      "title": "SIM / eSIM Provisioning",
+      "role": "engineer",
+      "department": "Operations",
+      "reportsTo": "head-orders",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "resource",
+        "esim profile"
+      ],
+      "capabilities": "Provisions SIM and eSIM profiles. Awaiting API."
+    },
+    {
+      "key": "address-validator",
+      "name": "Address Validator Agent",
+      "title": "Address Validator",
+      "role": "engineer",
+      "department": "Operations",
+      "reportsTo": "head-orders",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "geographic address"
+      ],
+      "capabilities": "Validates FWA installation addresses. Awaiting API."
+    },
+    {
+      "key": "head-ra",
+      "name": "Billing Lead Agent",
+      "title": "Head of Billing Agents",
+      "role": "general",
+      "department": "Billing",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "revenue leakage"
+      ],
+      "capabilities": "Coordinates revenue assurance agents."
+    },
+    {
+      "key": "usage-leakage",
+      "name": "Usage Leakage Agent",
+      "title": "Usage Leakage",
+      "role": "engineer",
+      "department": "Billing",
+      "reportsTo": "head-ra",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "usage",
+        "revenue leakage"
+      ],
+      "capabilities": "Finds usage that was never rated. Awaiting API."
+    },
+    {
+      "key": "rating-anomaly",
+      "name": "Rating Anomaly Agent",
+      "title": "Rating Anomaly",
+      "role": "engineer",
+      "department": "Billing",
+      "reportsTo": "head-ra",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "rated usage"
+      ],
+      "capabilities": "Flags rating outliers. Awaiting API."
+    },
+    {
+      "key": "dispute-resolver",
+      "name": "Dispute Resolver Agent",
+      "title": "Dispute Resolver",
+      "role": "engineer",
+      "department": "Billing",
+      "reportsTo": "head-ra",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "bill dispute"
+      ],
+      "capabilities": "Resolves bill disputes with evidence. Awaiting API."
+    },
+    {
+      "key": "fraud-signals",
+      "name": "Fraud Signals Agent",
+      "title": "Fraud Signals",
+      "role": "engineer",
+      "department": "Billing",
+      "reportsTo": "head-ra",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "fraud"
+      ],
+      "capabilities": "Watches SIM-swap and usage fraud signals. Awaiting API."
+    },
+    {
+      "key": "head-network",
+      "name": "Network Lead Agent",
+      "title": "Head of Network Agents",
+      "role": "general",
+      "department": "Network",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "service problem"
+      ],
+      "capabilities": "Coordinates network and ops agents."
+    },
+    {
+      "key": "fault-triage",
+      "name": "Fault Triage Agent",
+      "title": "Fault Triage",
+      "role": "engineer",
+      "department": "Network",
+      "reportsTo": "head-network",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "service problem",
+        "alarm"
+      ],
+      "capabilities": "Correlates alarms to customer impact. Awaiting API."
+    },
+    {
+      "key": "outage-comms",
+      "name": "Outage Communicator Agent",
+      "title": "Outage Communicator",
+      "role": "engineer",
+      "department": "Network",
+      "reportsTo": "head-network",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "service outage"
+      ],
+      "capabilities": "Notifies affected customers during outages. Awaiting API."
+    },
+    {
+      "key": "capacity-watcher",
+      "name": "Capacity Watcher Agent",
+      "title": "Capacity Watcher",
+      "role": "engineer",
+      "department": "Network",
+      "reportsTo": "head-network",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "capacity"
+      ],
+      "capabilities": "Watches FWA cell capacity before selling more. Awaiting API."
+    },
+    {
+      "key": "head-governance",
+      "name": "Governance Lead Agent",
+      "title": "Head of Agent Governance",
+      "role": "general",
+      "department": "Governance",
+      "reportsTo": "ops-lead",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "policy"
+      ],
+      "capabilities": "Owns agent policy, evidence and cost control."
+    },
+    {
+      "key": "policy-steward",
+      "name": "Policy Steward Agent",
+      "title": "Policy Steward",
+      "role": "engineer",
+      "department": "Governance",
+      "reportsTo": "head-governance",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "policy",
+        "mandate"
+      ],
+      "capabilities": "Keeps agent mandates current. Awaiting API."
+    },
+    {
+      "key": "audit-evidence",
+      "name": "Audit and Evidence Agent",
+      "title": "Audit & Evidence",
+      "role": "engineer",
+      "department": "Governance",
+      "reportsTo": "head-governance",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "evidence pack"
+      ],
+      "capabilities": "Assembles evidence packs for certification. Awaiting API."
+    },
+    {
+      "key": "cost-controller",
+      "name": "Cost Controller Agent",
+      "title": "Cost Controller",
+      "role": "engineer",
+      "department": "Governance",
+      "reportsTo": "head-governance",
+      "status": "configured",
+      "kit": "demo",
+      "terms": [
+        "agent budget"
+      ],
+      "capabilities": "Watches agent spend and budget stops. Awaiting API."
+    }
+  ]
+}

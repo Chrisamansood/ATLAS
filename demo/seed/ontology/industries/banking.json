@@ -1,0 +1,538 @@
+{
+ "industry": "banking",
+ "industryLabel": "Banking",
+ "operator": "Aurora Bank",
+ "standard": "FIBO",
+ "source": "Concepts from FIBO, the Financial Industry Business Ontology (EDM Council, open source, MIT licence). Aurora Bank is fictional; wording and agents are illustrative.",
+ "departments": [
+  "Retail Banking",
+  "Lending",
+  "Payments",
+  "Risk",
+  "Compliance",
+  "Operations",
+  "Executive"
+ ],
+ "layers": "FIBO",
+ "terms": [
+  {
+   "id": "customer",
+   "kind": "entity",
+   "department": "Retail Banking",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-pas-caa:Customer"
+   },
+   "nordwave": {
+    "label": "Customer",
+    "synonyms": [
+     "customer",
+     "client",
+     "account holder"
+    ],
+    "description": "A person or business that holds a product with the bank."
+   },
+   "capabilities": [
+    {
+     "id": "read:customer",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "deposit-account",
+   "kind": "entity",
+   "department": "Retail Banking",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-pas-caa:DepositAccount"
+   },
+   "nordwave": {
+    "label": "Current account",
+    "synonyms": [
+     "current account",
+     "checking account",
+     "deposit account",
+     "savings account"
+    ],
+    "description": "An account that holds the customer's money."
+   },
+   "capabilities": [
+    {
+     "id": "read:deposit-account",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "loan",
+   "kind": "entity",
+   "department": "Lending",
+   "tmf": {
+    "api": "FIBO-LOAN",
+    "concept": "fibo-loan-ln-ln:Loan"
+   },
+   "nordwave": {
+    "label": "Loan",
+    "synonyms": [
+     "loan",
+     "credit",
+     "lending product"
+    ],
+    "description": "Money lent under an agreement, repaid with interest."
+   },
+   "capabilities": [
+    {
+     "id": "read:loan",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "mortgage",
+   "kind": "entity",
+   "department": "Lending",
+   "tmf": {
+    "api": "FIBO-LOAN",
+    "concept": "fibo-loan-reln-mtg:Mortgage"
+   },
+   "nordwave": {
+    "label": "Mortgage",
+    "synonyms": [
+     "mortgage",
+     "home loan"
+    ],
+    "description": "A loan secured on property."
+   },
+   "capabilities": [
+    {
+     "id": "read:mortgage",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "interest-rate",
+   "kind": "entity",
+   "department": "Lending",
+   "tmf": {
+    "api": "FIBO-IND",
+    "concept": "fibo-ind-ir-ir:InterestRate"
+   },
+   "nordwave": {
+    "label": "Interest rate",
+    "synonyms": [
+     "interest rate",
+     "rate",
+     "APR"
+    ],
+    "description": "The price of borrowing, set from a reference rate plus margin."
+   },
+   "capabilities": [
+    {
+     "id": "read:interest-rate",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "payment",
+   "kind": "entity",
+   "department": "Payments",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-pas-fpas:PaymentService"
+   },
+   "nordwave": {
+    "label": "Payment",
+    "synonyms": [
+     "payment",
+     "transfer",
+     "transaction",
+     "SEPA payment"
+    ],
+    "description": "Money moved between accounts."
+   },
+   "capabilities": [
+    {
+     "id": "read:payment",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "credit-score",
+   "kind": "entity",
+   "department": "Risk",
+   "tmf": {
+    "api": "FIBO-FND",
+    "concept": "fibo-fnd-rel-rel:Rating"
+   },
+   "nordwave": {
+    "label": "Credit score",
+    "synonyms": [
+     "credit score",
+     "credit rating",
+     "risk grade"
+    ],
+    "description": "How likely the customer is to repay."
+   },
+   "capabilities": [
+    {
+     "id": "read:credit-score",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "collateral",
+   "kind": "entity",
+   "department": "Risk",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-dae-dbt:Collateral"
+   },
+   "nordwave": {
+    "label": "Collateral",
+    "synonyms": [
+     "collateral",
+     "security",
+     "pledge"
+    ],
+    "description": "An asset that secures a loan."
+   },
+   "capabilities": [
+    {
+     "id": "read:collateral",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "kyc",
+   "kind": "entity",
+   "department": "Compliance",
+   "tmf": {
+    "api": "FIBO-BE",
+    "concept": "fibo-be-le-lp:LegalPerson"
+   },
+   "nordwave": {
+    "label": "Know your customer",
+    "synonyms": [
+     "know your customer",
+     "KYC",
+     "identity check",
+     "customer due diligence"
+    ],
+    "description": "Verifying who the customer is before opening a product."
+   },
+   "capabilities": [
+    {
+     "id": "read:kyc",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "sanctions-screening",
+   "kind": "entity",
+   "department": "Compliance",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-fct-rga:RegulatoryAgency"
+   },
+   "nordwave": {
+    "label": "Sanctions screening",
+    "synonyms": [
+     "sanctions screening",
+     "AML screening",
+     "watchlist check"
+    ],
+    "description": "Checking parties against sanctions and anti-money-laundering lists."
+   },
+   "capabilities": [
+    {
+     "id": "read:sanctions-screening",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "dispute",
+   "kind": "entity",
+   "department": "Operations",
+   "tmf": {
+    "api": "FIBO-FBC",
+    "concept": "fibo-fbc-pas-fpas:PaymentService"
+   },
+   "nordwave": {
+    "label": "Card dispute",
+    "synonyms": [
+     "card dispute",
+     "chargeback",
+     "transaction dispute"
+    ],
+    "description": "A customer challenge to a payment."
+   },
+   "capabilities": [
+    {
+     "id": "read:dispute",
+     "status": "awaiting-api"
+    }
+   ]
+  }
+ ],
+ "relations": [
+  [
+   "loan",
+   "uses",
+   "interest-rate"
+  ],
+  [
+   "mortgage",
+   "instance-of",
+   "loan"
+  ],
+  [
+   "loan",
+   "depends-on",
+   "credit-score"
+  ],
+  [
+   "mortgage",
+   "depends-on",
+   "collateral"
+  ],
+  [
+   "deposit-account",
+   "depends-on",
+   "kyc"
+  ],
+  [
+   "payment",
+   "governed-by",
+   "sanctions-screening"
+  ],
+  [
+   "dispute",
+   "part-of",
+   "payment"
+  ]
+ ],
+ "workflows": [
+  {
+   "id": "loan-origination",
+   "name": "Lending \u00b7 Loan origination",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "customer",
+    "kyc",
+    "credit-score",
+    "loan",
+    "interest-rate"
+   ]
+  },
+  {
+   "id": "mortgage-decision",
+   "name": "Lending \u00b7 Mortgage decision",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "mortgage",
+    "collateral",
+    "credit-score",
+    "interest-rate"
+   ]
+  },
+  {
+   "id": "payment-screening",
+   "name": "Payments \u00b7 Sanctions screening",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "payment",
+    "sanctions-screening"
+   ]
+  },
+  {
+   "id": "dispute-resolution",
+   "name": "Operations \u00b7 Card dispute",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "dispute",
+    "payment",
+    "customer"
+   ]
+  }
+ ],
+ "roster": {
+  "company": {
+   "name": "Aurora Bank",
+   "description": "Aurora Bank AI workforce: retail, lending, payments, risk and compliance agents."
+  },
+  "agents": [
+   {
+    "key": "ops-lead",
+    "name": "Aurora Agent Operations Lead",
+    "title": "Head of AI Operations",
+    "role": "ceo",
+    "department": "Executive",
+    "reportsTo": null,
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "customer"
+    ],
+    "capabilities": "Sets goals for the agent workforce and approves new agents."
+   },
+   {
+    "key": "retail-lead",
+    "name": "Retail Banking Lead Agent",
+    "title": "Head of Retail Agents",
+    "role": "general",
+    "department": "Retail Banking",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "customer"
+    ],
+    "capabilities": "Coordinates onboarding and account agents."
+   },
+   {
+    "key": "onboarding",
+    "name": "Account Onboarding Agent",
+    "title": "Account onboarding",
+    "role": "engineer",
+    "department": "Retail Banking",
+    "reportsTo": "retail-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "deposit account",
+     "customer"
+    ],
+    "capabilities": "Opens accounts once KYC passes."
+   },
+   {
+    "key": "lending-lead",
+    "name": "Lending Lead Agent",
+    "title": "Head of Lending Agents",
+    "role": "general",
+    "department": "Lending",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "loan"
+    ],
+    "capabilities": "Coordinates loan and mortgage agents."
+   },
+   {
+    "key": "loan-officer",
+    "name": "Loan Officer Agent",
+    "title": "Loan origination",
+    "role": "engineer",
+    "department": "Lending",
+    "reportsTo": "lending-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "loan",
+     "interest rate",
+     "credit score"
+    ],
+    "capabilities": "Prepares a loan offer from the application and the credit score."
+   },
+   {
+    "key": "mortgage",
+    "name": "Mortgage Advisor Agent",
+    "title": "Mortgage decision",
+    "role": "engineer",
+    "department": "Lending",
+    "reportsTo": "lending-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "mortgage",
+     "collateral"
+    ],
+    "capabilities": "Assesses property collateral and drafts a mortgage decision."
+   },
+   {
+    "key": "payments-lead",
+    "name": "Payments Lead Agent",
+    "title": "Head of Payments Agents",
+    "role": "general",
+    "department": "Payments",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "payment"
+    ],
+    "capabilities": "Coordinates payment agents."
+   },
+   {
+    "key": "dispute",
+    "name": "Dispute Resolver Agent",
+    "title": "Card disputes",
+    "role": "engineer",
+    "department": "Operations",
+    "reportsTo": "payments-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "card dispute",
+     "payment"
+    ],
+    "capabilities": "Investigates chargebacks and proposes a resolution."
+   },
+   {
+    "key": "risk",
+    "name": "Credit Risk Agent",
+    "title": "Credit risk",
+    "role": "engineer",
+    "department": "Risk",
+    "reportsTo": "ops-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "credit score",
+     "collateral"
+    ],
+    "capabilities": "Scores applications and flags concentration risk."
+   },
+   {
+    "key": "kyc",
+    "name": "KYC Agent",
+    "title": "Know your customer",
+    "role": "engineer",
+    "department": "Compliance",
+    "reportsTo": "ops-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "KYC"
+    ],
+    "capabilities": "Verifies identity and due diligence."
+   },
+   {
+    "key": "aml",
+    "name": "AML Screening Agent",
+    "title": "Sanctions screening",
+    "role": "engineer",
+    "department": "Compliance",
+    "reportsTo": "ops-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "sanctions screening"
+    ],
+    "capabilities": "Screens payments against sanctions lists; hits go to a person."
+   }
+  ]
+ }
+}

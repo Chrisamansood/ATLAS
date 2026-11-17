@@ -1,0 +1,844 @@
+{
+  "version": "0.1.0",
+  "operator": "ATLAS AI Labs",
+  "layers": [
+    "TMF Open API",
+    "Generic demo capabilities",
+    "Nordwave vocabulary"
+  ],
+  "source": "Personal synthetic demo glossary using public TMF-shaped concepts. Mappings are illustrative and not a conformance claim.",
+  "terms": [
+    {
+      "id": "product-offering",
+      "kind": "entity",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "ProductOffering"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Offer",
+        "synonyms": [
+          "product offering",
+          "offer",
+          "plan",
+          "tariff"
+        ],
+        "description": "What Nordwave sells: a plan, add-on or bundle with a price."
+      },
+      "capabilities": [
+        {
+          "id": "read:product-offerings",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "product-specification",
+      "kind": "entity",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "ProductSpecification"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Product spec",
+        "synonyms": [
+          "product specification",
+          "spec"
+        ],
+        "description": "The technical definition an offer is built from."
+      },
+      "capabilities": [
+        {
+          "id": "read:specifications",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:characteristic-groups",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:product-offerings",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "catalogue-release",
+      "kind": "concept",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "Catalog"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Catalogue release",
+        "synonyms": [
+          "catalogue release",
+          "catalog version"
+        ],
+        "description": "A versioned set of offers published to channels."
+      },
+      "capabilities": [
+        {
+          "id": "read:catalog-versions",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:catalog-deployments",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "bundle",
+      "kind": "relationship",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "BundledProductOffering"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Bundle",
+        "synonyms": [
+          "bundle"
+        ],
+        "description": "Offers sold together, for example mobile plus fibre."
+      },
+      "capabilities": [
+        {
+          "id": "read:product-offerings",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:product-offering-groups",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "price",
+      "kind": "entity",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "ProductOfferingPrice"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Price",
+        "synonyms": [
+          "price",
+          "product offering price"
+        ],
+        "description": "Recurring and one-off charges. Amounts come from the rating engine, never from an LLM."
+      },
+      "capabilities": [
+        {
+          "id": "read:catalog-prices",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:price-specifications",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:product-offering-pricing",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "add-on",
+      "kind": "relationship",
+      "department": "Marketing",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "ProductOffering (optional item)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Add-on",
+        "synonyms": [
+          "add-on",
+          "partner product"
+        ],
+        "description": "An optional offer on top of a plan, including partner products."
+      },
+      "capabilities": [
+        {
+          "id": "read:product-offerings",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "trouble-ticket",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF621",
+        "concept": "TroubleTicket"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Trouble ticket",
+        "synonyms": [
+          "trouble ticket",
+          "customer problem",
+          "complaint",
+          "complaints"
+        ],
+        "description": "A problem a customer reports, tracked to resolution."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:trouble-ticket",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "customer-bill",
+      "kind": "entity",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF678",
+        "concept": "CustomerBill"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Customer bill",
+        "synonyms": [
+          "customer bill",
+          "bill",
+          "invoice"
+        ],
+        "description": "The invoice for a billing period with its lines."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:customer-bill",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "bill-shock",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF678",
+        "concept": "CustomerBill (unusually high)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Bill shock",
+        "synonyms": [
+          "bill shock"
+        ],
+        "description": "A bill far above the customer's usual, usually from roaming or premium services."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:bill-shock",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "goodwill-credit",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF678",
+        "concept": "CustomerBill adjustment"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Goodwill credit",
+        "synonyms": [
+          "goodwill credit"
+        ],
+        "description": "A credit granted within policy (cap 25 EUR) to make up for a surprise charge."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:goodwill-credit",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "usage",
+      "kind": "entity",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF635",
+        "concept": "Usage"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Usage",
+        "synonyms": [
+          "usage"
+        ],
+        "description": "Data, voice and SMS consumed by a subscription."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:usage",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "rated-usage",
+      "kind": "entity",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF635",
+        "concept": "Usage (rated)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Rated usage",
+        "synonyms": [
+          "rated usage"
+        ],
+        "description": "Usage after the rating engine has priced it."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:rated-usage",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "churn-risk",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF629",
+        "concept": "Customer (derived signal)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Churn risk",
+        "synonyms": [
+          "churn risk"
+        ],
+        "description": "A score that a subscriber may leave. Derived, not stored in the BSS."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:churn-risk",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "retention-offer",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": "TMF620",
+        "concept": "ProductOffering (retention)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Retention offer",
+        "synonyms": [
+          "retention offer",
+          "save offer"
+        ],
+        "description": "An offer made to keep a subscriber at risk of leaving."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:retention-offer",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "dunning",
+      "kind": "journey",
+      "department": "Care",
+      "tmf": {
+        "api": null,
+        "concept": "Collections reminders (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Dunning",
+        "synonyms": [
+          "dunning",
+          "collections"
+        ],
+        "description": "Payment reminders sent within policy."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:dunning",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "bill-dispute",
+      "kind": "concept",
+      "department": "Care",
+      "tmf": {
+        "api": null,
+        "concept": "Dispute on a bill (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Bill dispute",
+        "synonyms": [
+          "bill dispute",
+          "dispute"
+        ],
+        "description": "A customer's challenge to a charge, resolved with evidence."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:bill-dispute",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "product-order",
+      "kind": "entity",
+      "department": "Operations",
+      "tmf": {
+        "api": "TMF622",
+        "concept": "ProductOrder"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Product order",
+        "synonyms": [
+          "product order",
+          "order"
+        ],
+        "description": "A customer's order for offers, from basket to activation."
+      },
+      "capabilities": [
+        {
+          "id": "read:orders",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:order-items",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:order-products",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:order-prices",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:order-tasks",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "order-fallout",
+      "kind": "concept",
+      "department": "Operations",
+      "tmf": {
+        "api": "TMF622",
+        "concept": "ProductOrder (failed or stuck state)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Order fallout",
+        "synonyms": [
+          "order fallout"
+        ],
+        "description": "An order that stalls between steps and needs a fix or re-submit."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:order-fallout",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "service-activation",
+      "kind": "journey",
+      "department": "Operations",
+      "tmf": {
+        "api": "TMF640",
+        "concept": "ServiceActivationAndConfiguration"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Service activation",
+        "synonyms": [
+          "service activation",
+          "activation"
+        ],
+        "description": "Turning an order into a working service."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:service-activation",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "number-portability",
+      "kind": "entity",
+      "department": "Operations",
+      "tmf": {
+        "api": null,
+        "concept": "Port-in and port-out (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Number portability",
+        "synonyms": [
+          "number portability",
+          "port-in",
+          "port-out"
+        ],
+        "description": "Moving a phone number between operators."
+      },
+      "capabilities": [
+        {
+          "id": "read:mnp-requests",
+          "status": "atlas-api"
+        },
+        {
+          "id": "read:mnp-request-steps",
+          "status": "atlas-api"
+        }
+      ]
+    },
+    {
+      "id": "esim-profile",
+      "kind": "entity",
+      "department": "Operations",
+      "tmf": {
+        "api": "TMF639",
+        "concept": "ResourceInventory (SIM, eSIM profile)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "SIM and eSIM",
+        "synonyms": [
+          "esim profile",
+          "resource",
+          "sim"
+        ],
+        "description": "The SIM or eSIM profile that connects a subscription."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:esim-profile",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "geographic-address",
+      "kind": "entity",
+      "department": "Operations",
+      "tmf": {
+        "api": "TMF673",
+        "concept": "GeographicAddress"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Geographic address",
+        "synonyms": [
+          "geographic address",
+          "address"
+        ],
+        "description": "A validated service address, for example for fixed wireless installation."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:geographic-address",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "revenue-leakage",
+      "kind": "concept",
+      "department": "Billing",
+      "tmf": {
+        "api": null,
+        "concept": "Revenue assurance (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Revenue leakage",
+        "synonyms": [
+          "revenue leakage"
+        ],
+        "description": "Usage or charges that were never billed."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:revenue-leakage",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "fraud",
+      "kind": "concept",
+      "department": "Billing",
+      "tmf": {
+        "api": null,
+        "concept": "Fraud management (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Fraud",
+        "synonyms": [
+          "fraud",
+          "fraud signal"
+        ],
+        "description": "SIM-swap and usage patterns that suggest abuse."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:fraud",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "service-problem",
+      "kind": "concept",
+      "department": "Network",
+      "tmf": {
+        "api": "TMF656",
+        "concept": "ServiceProblem"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Service problem",
+        "synonyms": [
+          "service problem",
+          "service outage",
+          "outage"
+        ],
+        "description": "A fault or outage affecting customers' services."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:service-problem",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "alarm",
+      "kind": "entity",
+      "department": "Network",
+      "tmf": {
+        "api": "TMF642",
+        "concept": "Alarm"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Alarm",
+        "synonyms": [
+          "alarm"
+        ],
+        "description": "A network element alert, correlated to customer impact."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:alarm",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "capacity",
+      "kind": "concept",
+      "department": "Network",
+      "tmf": {
+        "api": null,
+        "concept": "Cell and network capacity (no dedicated TMF Open API assumed)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Capacity",
+        "synonyms": [
+          "capacity"
+        ],
+        "description": "Remaining headroom, checked before selling more."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:capacity",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "policy",
+      "kind": "concept",
+      "department": "Governance",
+      "tmf": {
+        "api": null,
+        "concept": "Agent mandate and policy (atlas-semantic policy.yaml shape)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Policy",
+        "synonyms": [
+          "policy",
+          "mandate"
+        ],
+        "description": "What an agent may do, for which risk tier, who may propose it."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:policy",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "evidence-pack",
+      "kind": "concept",
+      "department": "Governance",
+      "tmf": {
+        "api": null,
+        "concept": "Change-gate evidence (impact of change)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Evidence pack",
+        "synonyms": [
+          "evidence pack"
+        ],
+        "description": "The record that shows an agent action and its blast radius."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:evidence-pack",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "agent-budget",
+      "kind": "concept",
+      "department": "Governance",
+      "tmf": {
+        "api": null,
+        "concept": "Agent allowance (OCS-style cap)"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Agent budget",
+        "synonyms": [
+          "agent budget"
+        ],
+        "description": "A hard spending cap per agent."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:agent-budget",
+          "status": "awaiting-api"
+        }
+      ]
+    },
+    {
+      "id": "agent-workforce",
+      "kind": "concept",
+      "department": "Governance",
+      "tmf": {
+        "api": null,
+        "concept": "The operator's digital employees"
+      },
+      "atlas": null,
+      "nordwave": {
+        "label": "Agent workforce",
+        "synonyms": [
+          "agent workforce"
+        ],
+        "description": "The set of agents, their managers and mandates."
+      },
+      "capabilities": [
+        {
+          "id": "nordwave:agent-workforce",
+          "status": "awaiting-api"
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "care-bill-shock",
+      "name": "Care \u00b7 Bill Shock",
+      "app": "sim",
+      "status": "planned",
+      "terms": [
+        "bill-shock",
+        "customer-bill",
+        "goodwill-credit",
+        "price",
+        "product-offering"
+      ]
+    },
+    {
+      "id": "care-retention",
+      "name": "Care \u00b7 Retention",
+      "app": "sim",
+      "status": "planned",
+      "terms": [
+        "churn-risk",
+        "retention-offer",
+        "product-offering",
+        "price"
+      ]
+    },
+    {
+      "id": "marketing-catalogue",
+      "name": "Marketing \u00b7 Catalogue",
+      "app": "sim",
+      "status": "planned",
+      "terms": [
+        "product-offering",
+        "product-specification",
+        "catalogue-release",
+        "bundle",
+        "price"
+      ]
+    },
+    {
+      "id": "network-capacity-watcher",
+      "name": "Network \u00b7 Capacity Watcher",
+      "app": "langflow",
+      "status": "planned",
+      "terms": [
+        "capacity"
+      ]
+    }
+  ]
+}

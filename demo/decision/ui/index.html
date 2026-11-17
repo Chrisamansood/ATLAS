@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<title>ATLAS Decisions</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23171717'/%3E%3Ccircle cx='32' cy='32' r='13' fill='none' stroke='%2336E0AD' stroke-width='6'/%3E%3C/svg%3E">
+<script>
+// Same theme logic as the ATLAS Agent Organization: stored choice, else the system setting, default dark.
+(function () { var t = null; try { t = localStorage.getItem("theme"); } catch (e) {}
+  var dark = t === "dark" || (t !== "light" && !(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
+  document.documentElement.classList.toggle("dark", dark); document.documentElement.style.colorScheme = dark ? "dark" : "light"; })();
+</script>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+:root {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; --radius: 0.5rem;
+  --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --primary: rgb(0, 35, 75); --ring: rgb(0, 160, 227);
+  --sidebar: #f2f2f2; --sel: rgb(11, 58, 107);
+  --ok: #2FA67A; --bad: #E0648A; --warn: #F0A030; --info: #2E86D6;
+}
+html.dark { --background: oklch(0.205 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.205 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 0.1); --input: oklch(1 0 0 / 0.15); --primary: rgb(0, 160, 227); --sidebar: oklch(0.269 0 0); }
+* { box-sizing: border-box; } html, body { margin: 0; height: 100%; }
+body { font-family: var(--font-sans); font-size: 14px; background: var(--background); color: var(--foreground); }
+.app { display: flex; height: 100vh; }
+.sb { width: 240px; flex: none; background: var(--sidebar); display: flex; flex-direction: column; padding: 12px; gap: 4px; overflow: auto; }
+.sb-head { display: flex; align-items: center; gap: 10px; padding: 6px 8px 14px; } .sb-head svg { width: 26px; height: 26px; flex: none; }
+.sb-head b { font-size: 14px; font-weight: 600; display: block; line-height: 1.2; } .sb-head span { font-size: 11px; color: var(--muted-foreground); }
+.sb-label { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: color-mix(in oklab, var(--muted-foreground) 60%, transparent); padding: 14px 8px 4px; }
+.nav { display: flex; align-items: center; gap: 10px; width: 100%; height: 32px; padding: 6px 8px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; color: inherit; text-decoration: none; background: none; border: 0; cursor: pointer; text-align: left; }
+.nav:hover { background: color-mix(in oklab, currentColor 8%, transparent); } .nav[aria-current] { background: var(--sel); color: #fff; }
+.nav svg { width: 16px; height: 16px; flex: none; } .sb-foot { margin-top: auto; padding-top: 10px; }
+.mainc { flex: 1; min-width: 0; overflow: auto; }
+.topbar { height: 60px; display: flex; align-items: center; gap: 14px; padding: 0 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--background); z-index: 2; }
+.topbar h1 { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: .6px; text-transform: uppercase; }
+.topbar .sub { color: var(--muted-foreground); font-size: 12px; margin-left: auto; }
+.wrap { padding: 18px 24px 40px; max-width: 1180px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.chip { font: inherit; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: inherit; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--sel); color: #fff; border-color: transparent; } .chip:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+select, input[type=number] { font: inherit; font-size: 12px; height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--input); background: transparent; color: inherit; }
+.banner { border: 1px solid color-mix(in oklab, var(--warn) 50%, transparent); background: color-mix(in oklab, var(--warn) 10%, transparent); padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; line-height: 1.5; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--card); }
+.kpi .l { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted-foreground); } .kpi .v { font-size: 26px; font-weight: 600; margin-top: 6px; } .kpi .n { font-size: 12px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.4; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 14px; } @media (max-width: 980px) { .grid2 { grid-template-columns: 1fr; } .sb { display: none; } }
+h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; letter-spacing: .3px; } h3 { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted-foreground); margin: 14px 0 6px; font-weight: 500; }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; } .pill.go { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); } .pill.nogo { background: color-mix(in oklab, var(--bad) 20%, transparent); color: var(--bad); }
+ul.reasons { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; } .muted { color: var(--muted-foreground); font-size: 12px; line-height: 1.5; }
+svg text { font-family: var(--font-sans); fill: var(--muted-foreground); font-size: 10px; }
+.ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; } .btn { font: inherit; font-size: 12px; font-weight: 500; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--input); background: transparent; color: inherit; cursor: pointer; } .btn.primary { background: var(--sel); color: #fff; border-color: transparent; }
+.counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; } .counters div { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; } .counters b { display: block; font-size: 20px; font-weight: 600; } .counters span { font-size: 11px; color: var(--muted-foreground); }
+.bar { height: 6px; border-radius: 3px; background: var(--muted); overflow: hidden; margin-bottom: 8px; } .bar i { display: block; height: 100%; background: var(--ring); width: 0; }
+.feed { font-size: 12px; line-height: 1.45; min-height: 190px; } .feed .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 6px 0; border-top: 1px solid var(--border); } .feed .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag { align-self: center; font-size: 10.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; } .tag.c { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); } .tag.w { background: color-mix(in oklab, var(--bad) 22%, transparent); color: var(--bad); } .tag.l { background: color-mix(in oklab, var(--warn) 24%, transparent); color: var(--warn); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; } th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--border); } th { font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted-foreground); font-weight: 500; border-top: 0; } td.num { font-variant-numeric: tabular-nums; }
+.empty { border: 1px dashed var(--border); border-radius: var(--radius); padding: 28px; line-height: 1.7; } code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--muted); padding: 1px 6px; border-radius: 5px; }
+input[type=range] { width: 160px; accent-color: var(--ring); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sb">
+    <div class="sb-head">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="13" fill="#171717"/><circle cx="32" cy="32" r="13" fill="none" stroke="#36E0AD" stroke-width="6"/></svg>
+      <div><b>Decisions</b><span id="opname">ATLAS AI Labs</span></div>
+    </div>
+    <div class="sb-label">View</div>
+    <a class="nav" aria-current="page" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Routing economics</a>
+    <div id="atlas-platform" data-current="decisions"></div>
+    <div class="sb-foot"><button class="nav" id="theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span id="theme-label">Light mode</span></button></div>
+  </aside>
+  <div class="mainc">
+    <div class="topbar"><h1>Decisions</h1><span class="sub" id="gen"></span></div>
+    <div class="wrap" id="root"><p class="muted">Loading…</p></div>
+  </div>
+</div>
+<script type="module">
+import { replayState, outcomeOf, euros } from "/decisions/replay.mjs";
+
+const USE_NAME = { routing: "Ticket routing", "bill-shock": "Bill-shock complaint", terms: "Term resolution", tier: "Model tier" };
+const USE_BLURB = { routing: "Which department's agents handle a ticket", "bill-shock": "Is this message a bill-shock complaint?", terms: "Which ontology term does a mention mean?", tier: "Which model tier does a task need?" };
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); } for (const c of kids.flat(Infinity)) if (c != null) n.append(c.nodeType ? c : document.createTextNode(String(c))); return n; };
+const svg = (tag, attrs = {}, ...kids) => { const n = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(String(c))); return n; };
+const pct = (x, d = 1) => (x == null ? "n/a" : (x * 100).toFixed(d) + "%");
+const num = (x) => Math.round(x).toLocaleString("en-US");
+
+let D, use = "routing", engineId = null, timer = null, replay = null;
+const root = document.getElementById("root");
+
+async function boot() {
+  D = await (await fetch("/data/decisions.json", { cache: "no-store" })).json();
+  try { const o = await (await fetch("/data/ontology.json", { cache: "no-store" })).json(); document.getElementById("opname").textContent = o.operator ?? "ATLAS AI Labs"; } catch { /* optional */ }
+  engineId = D.engines[0]?.engine ?? null;
+  const h = decodeURIComponent(location.hash.slice(1)); if (D.uses.includes(h)) use = h;
+  render();
+}
+
+const engine = () => D.engines.find((e) => e.engine === engineId);
+
+function render() {
+  stop(); root.replaceChildren();
+  if (!D.hasData) {
+    root.append(el("div", { class: "empty" }, el("h2", {}, "No decision results yet"), el("p", {}, "This page shows real measurements only. Nothing on it is typed in by hand."),
+      el("p", {}, "Model evaluation results are not bundled in this standalone edition. Use Proving Ground for the included deterministic replays.")));
+    return;
+  }
+  document.getElementById("gen").textContent = "measured " + String(engine().generatedAt ?? "").slice(0, 16).replace("T", " ");
+  const real = D.engines.some((e) => e.kind !== "baseline");
+  if (!real) root.append(el("div", { class: "banner" }, el("b", {}, "Showing the cheap statistical baseline. "), "The ATLAS Fast Decision Engine has not been measured yet; when it has, it appears here and is compared against this baseline. LLM cost and speed are not measured yet either: tokens are an estimate (about four characters per token)."));
+
+  const tabs = el("div", { class: "tabs" }, D.uses.map((u) => el("button", { class: "chip", "aria-pressed": String(u === use), onclick: () => { use = u; history.replaceState(null, "", "#" + u); render(); } }, USE_NAME[u])));
+  if (D.engines.length > 1) tabs.append(el("select", { "aria-label": "Engine", onchange: (e) => { engineId = e.target.value; render(); } }, D.engines.map((e) => el("option", { value: e.engine, ...(e.engine === engineId ? { selected: "" } : {}) }, e.engineLabel))));
+  root.append(tabs, el("p", { class: "muted", style: "margin:-4px 0 14px" }, USE_BLURB[use] + ". Engine: " + engine().engineLabel + "."));
+
+  const r = engine().uses[use];
+  if (!r) { root.append(el("div", { class: "empty" }, "This engine has no result for this use yet.")); return; }
+  const t = r.test, thr = r.calibration?.threshold ?? null, tok = r.baseline_tokens_per_decision;
+
+  root.append(el("div", { class: "kpis" },
+    kpi("Answered locally", pct(t.coverage), thr == null ? "No confidence level was reliable enough, so everything goes to the LLM." : "Confidence at or above " + thr.toFixed(3) + " (frozen on calibration data)"),
+    kpi("Sent to the LLM", pct(1 - t.coverage), "Low-confidence decisions escalate, so quality is protected"),
+    kpi("Local answers that are right", pct(t.accuracy), t.accuracy_ci95 ? "95% interval " + pct(t.accuracy_ci95[0], 0) + " to " + pct(t.accuracy_ci95[1], 0) + " on " + num(t.answered) + " answers" : "no local answers"),
+    kpi("Tokens avoided (estimate)", num(t.coverage * tok * 1000), "per 1,000 decisions; an LLM call is about " + tok + " tokens here"),
+    kpi("Local speed", r.ms_per_decision.toFixed(2) + " ms", "per decision, measured on this Mac. LLM speed: not measured yet")));
+
+  const gate = el("div", { class: "card" }, el("h2", {}, "Does it pass? ", el("span", { class: "pill " + (r.gate.verdict === "go" ? "go" : "nogo") }, r.gate.verdict === "go" ? "GO" : "NO-GO")),
+    el("div", { class: "muted" }, "Gate: at least 85% right on at least 60% of decisions, a positive saving and no calibration warning. The cut-off is fixed on calibration data before the test data is looked at."),
+    r.gate.reasons.length ? el("ul", { class: "reasons" }, r.gate.reasons.map((x) => el("li", {}, x))) : el("p", {}, "All gate conditions are met."),
+    r.gate.verdict !== "go" ? el("p", { class: "muted" }, "A decision type that does not pass stays with the LLM. That is a valid result, and it is shown as it is.") : null);
+  root.append(el("div", { class: "grid2" }, chart(r, thr), gate));
+  root.append(replayCard(r, thr, tok));
+  root.append(compare());
+  root.append(el("div", { class: "card", style: "margin-top:14px" }, el("h2", {}, "How this is measured"), el("ul", { class: "reasons" },
+    el("li", {}, "The test tickets use wording the engine was never calibrated on, so the numbers reflect new situations, not memorised ones."),
+    el("li", {}, "The data is synthetic and its labels come from templates and stated rules: demo evidence, not a claim about any customer's accuracy."),
+    el("li", {}, "Tokens avoided = decisions answered locally × the estimated size of the LLM call they replaced. Money appears only if you type a price."),
+    el("li", {}, "Never used for policy limits, credits or anything that computes money. Those stay rules."))));
+}
+
+function kpi(l, v, n) { return el("div", { class: "card kpi" }, el("div", { class: "l" }, l), el("div", { class: "v" }, v), el("div", { class: "n" }, n)); }
+
+function chart(r, thr) {
+  const W = 540, H = 300, m = { l: 44, r: 14, t: 14, b: 38 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const X = (c) => m.l + c * iw, Y = (a) => m.t + (1 - a) * ih;
+  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "Coverage against accuracy" });
+  s.append(svg("rect", { x: X(0.6), y: Y(1), width: X(1) - X(0.6), height: Y(0.85) - Y(1), fill: "var(--ok)", opacity: ".14" }));
+  for (const a of [0, 0.25, 0.5, 0.75, 1]) { s.append(svg("line", { x1: m.l, x2: W - m.r, y1: Y(a), y2: Y(a), stroke: "var(--border)" }), svg("text", { x: m.l - 6, y: Y(a) + 3, "text-anchor": "end" }, Math.round(a * 100) + "%")); }
+  for (const c of [0, 0.25, 0.5, 0.75, 1]) s.append(svg("text", { x: X(c), y: H - 22, "text-anchor": "middle" }, Math.round(c * 100) + "%"));
+  s.append(svg("text", { x: m.l + iw / 2, y: H - 6, "text-anchor": "middle" }, "answered locally (coverage)"), svg("text", { x: 12, y: m.t + ih / 2, transform: `rotate(-90 12 ${m.t + ih / 2})`, "text-anchor": "middle" }, "right when answered"));
+  const path = (pts) => pts.map((p, i) => (i ? "L" : "M") + X(p.coverage).toFixed(1) + "," + Y(p.accuracy).toFixed(1)).join(" ");
+  if (r.curve_calib?.length) s.append(svg("path", { d: path(r.curve_calib), fill: "none", stroke: "var(--muted-foreground)", "stroke-width": 1.5, "stroke-dasharray": "4 3" }));
+  if (r.curve_test?.length) s.append(svg("path", { d: path(r.curve_test), fill: "none", stroke: "var(--ring)", "stroke-width": 2.2 }));
+  if (thr != null && r.test.accuracy != null) s.append(svg("circle", { cx: X(r.test.coverage), cy: Y(r.test.accuracy), r: 5, fill: "var(--ring)", stroke: "var(--background)", "stroke-width": 2 }));
+  return el("div", { class: "card" }, el("h2", {}, "The trade-off: how often it answers against how often it is right"), s,
+    el("div", { class: "muted" }, "Solid line: test tickets. Dashed: calibration tickets. Green zone: where the gate is passed. The dot is the frozen cut-off applied to the test tickets", thr == null ? " (none could be set: no cut-off was reliable)." : "."));
+}
+
+function replayCard(r, thr, tok) {
+  const card = el("div", { class: "card", style: "margin-top:14px" }), feed = el("div", { class: "feed" }), bar = el("i"), counters = el("div", { class: "counters" });
+  const price = el("input", { type: "number", min: "0", step: "any", placeholder: "price", "aria-label": "LLM price in euros per million tokens", style: "width:90px" });
+  const money = el("span", { class: "muted" }, "enter your LLM price to see euros");
+  const speed = el("select", { "aria-label": "Replay speed" }, el("option", { value: "5" }, "Slow"), el("option", { value: "30", selected: "" }, "Normal"), el("option", { value: "150" }, "Fast"));
+  const what = el("input", { type: "range", min: "0", max: "1", step: "0.01", value: String(thr ?? 0.9), "aria-label": "What-if confidence cut-off" });
+  const whatLabel = el("span", { class: "muted" });
+  const play = el("button", { class: "btn primary" }, "▶ Replay the test tickets");
+  const reset = el("button", { class: "btn" }, "Reset");
+  let rows = null, k = 0, frac = 0, cut = thr;
+  const draw = () => {
+    const s = replayState(rows ?? [], { threshold: cut, tokensPerDecision: tok }, k);
+    counters.replaceChildren(...[[num(s.seen) + " / " + num((rows ?? []).length), "tickets seen"], [num(s.answered), "answered locally"], [num(s.escalated), "sent to the LLM"], [s.answeredAccuracy == null ? "n/a" : pct(s.answeredAccuracy), "local answers right"]].map(([a, b]) => el("div", {}, el("b", {}, a), el("span", {}, b))));
+    bar.style.width = rows ? (100 * k / rows.length).toFixed(1) + "%" : "0";
+    const e = euros(s.tokensAvoided, price.value); money.textContent = e == null ? "tokens avoided so far: " + num(s.tokensAvoided) + " (estimate). Enter your LLM price to see euros." : "avoided so far: " + num(s.tokensAvoided) + " tokens ≈ € " + e.toFixed(2) + " at your price (estimate)";
+    feed.replaceChildren(...(rows ?? []).slice(Math.max(0, k - 7), k).reverse().map((row) => { const o = outcomeOf(row, cut); return el("div", { class: "row" }, el("div", { class: "t", title: row.text }, row.text, el("div", { class: "muted" }, "should be " + row.truth + " · engine said " + row.pred + " (" + pct(row.conf, 0) + " sure)")), el("span", { class: "tag " + (o === "local-correct" ? "c" : o === "local-wrong" ? "w" : "l") }, o === "local-correct" ? "answered locally ✓" : o === "local-wrong" ? "answered locally ✗ wrong" : "sent to the LLM")); }));
+    if (!rows || k === 0) feed.replaceChildren(el("p", { class: "muted" }, "Press replay to stream the held-out test tickets through the engine, one by one. Wrong answers are shown too."));
+    whatLabel.textContent = cut == null ? "what-if cut-off: all to LLM" : "cut-off " + cut.toFixed(2) + (thr != null && Math.abs(cut - thr) < 0.005 ? " (frozen gate)" : " (what-if, not the frozen gate)");
+  };
+  const tick = () => { frac += Number(speed.value) * 0.05; const step = Math.floor(frac); frac -= step; k = Math.min(rows.length, k + step); draw(); if (k >= rows.length) { stop(); play.textContent = "↻ Replay again"; } };
+  play.addEventListener("click", async () => {
+    if (timer) { stop(); play.textContent = "▶ Resume"; return; }
+    if (!rows) { const res = await fetch(`/data/decisions/predictions?engine=${encodeURIComponent(engineId)}&use=${encodeURIComponent(use)}`); if (!res.ok) { feed.replaceChildren(el("p", { class: "muted" }, "No recorded decisions for this engine and use.")); return; } rows = await res.json(); }
+    if (k >= rows.length) k = 0;
+    play.textContent = "❚❚ Pause"; timer = setInterval(tick, 50);
+  });
+  reset.addEventListener("click", () => { stop(); k = 0; frac = 0; cut = thr; what.value = String(thr ?? 0.9); play.textContent = "▶ Replay the test tickets"; draw(); });
+  what.addEventListener("input", () => { cut = Number(what.value); draw(); });
+  price.addEventListener("input", draw);
+  card.append(el("h2", {}, "Replay: watch it decide"), el("div", { class: "ctl" }, play, reset, speed, el("span", { class: "muted" }, "what-if"), what, whatLabel, el("span", { class: "muted", style: "margin-left:auto" }, "€ per million tokens"), price), el("div", { class: "bar" }, bar), counters, money, el("h3", {}, "Latest decisions"), feed);
+  replay = { draw }; draw(); return card;
+}
+
+function compare() {
+  const eng = D.engines;
+  return el("div", { class: "card", style: "margin-top:14px" }, el("h2", {}, "All decision types at a glance"),
+    el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "Decision"), eng.map((e) => [el("th", { colspan: "3" }, e.engineLabel)]))),
+      el("tbody", {}, D.uses.map((u) => el("tr", {}, el("td", {}, el("a", { href: "#" + u, onclick: () => { use = u; setTimeout(render, 0); }, style: "color:inherit" }, USE_NAME[u])),
+        eng.map((e) => { const r = e.uses[u]; if (!r) return [el("td", { colspan: "3", class: "muted" }, "not measured")]; return [el("td", { class: "num" }, "right " + pct(r.plain_accuracy_test, 0)), el("td", { class: "num" }, "local " + pct(r.test.coverage, 0)), el("td", {}, el("span", { class: "pill " + (r.gate.verdict === "go" ? "go" : "nogo") }, r.gate.verdict === "go" ? "GO" : "NO-GO"))]; }))))),
+    el("div", { class: "muted", style: "margin-top:8px" }, "“right” is the share of all test tickets answered correctly if every one were answered; “local” is how many are answered locally at the frozen cut-off."));
+}
+
+function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+document.getElementById("theme").onclick = () => { const dark = !document.documentElement.classList.contains("dark"); document.documentElement.classList.toggle("dark", dark); document.documentElement.style.colorScheme = dark ? "dark" : "light"; try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch (e) {} document.getElementById("theme-label").textContent = dark ? "Light mode" : "Dark mode"; };
+document.getElementById("theme-label").textContent = document.documentElement.classList.contains("dark") ? "Light mode" : "Dark mode";
+boot().catch((e) => { root.textContent = "Could not load the decision results: " + e.message; });
+</script>
+<script src="/shared/platform-nav.js"></script>
+</body>
+</html>

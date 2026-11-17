@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATLAS HIVE · Co-operating System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* HIVE (P0-37, P0-38): the main HIVE. The organization on a revolving sphere, with larger type.
+   Paperclip dark tokens. Mint is the motion hue (core, working agents, I/O bars, spin). Coral means only "a person is needed". */
+:root{
+  --bg:#171717; --deep:#0E0E0E; --raised:#262626; --raised-2:#333333;
+  --fg:#FAFAFA; --primary:#E5E5E5; --muted:#BDBDBD; --dim:#9C9C9C; --faint:#525252;
+  --border:rgba(255,255,255,0.10); --border-2:rgba(255,255,255,0.16);
+  --coral:#FF7E46; --mint:#36E0AD; --mint-rgb:54,224,173; --coral-rgb:255,126,70;
+  --rail:350px; --gut:32px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:radial-gradient(ellipse 55% 55% at 50% 45%, #202020 0%, #171717 45%, #0E0E0E 100%) fixed, var(--bg);
+  color:var(--fg);font-family:'Rajdhani',sans-serif;font-size:19px;overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:3px;color:var(--fg);text-transform:uppercase;white-space:nowrap;}
+.eyebrow .muted{color:var(--dim);}
+.hairline{height:1px;background:linear-gradient(90deg,var(--border-2),transparent);flex:1;}
+.rh{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.block{margin-top:22px;}
+.empty{font-size:17.5px;color:var(--dim);}
+.when{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--dim);white-space:nowrap;margin-left:auto;padding-left:8px;}
+
+.stage{position:relative;height:100vh;min-height:760px;}
+.floor{position:fixed;left:0;right:0;bottom:0;height:34%;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,transparent 0 78px,rgba(255,255,255,0.035) 78px 79px),repeating-linear-gradient(0deg,transparent 0 60px,rgba(255,255,255,0.03) 60px 61px);
+  transform:perspective(420px) rotateX(62deg);transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,black,transparent 88%);mask-image:linear-gradient(to top,black,transparent 88%);}
+.sky{position:absolute;inset:0;z-index:1;}
+.sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;}
+.vp{position:fixed;width:26px;height:26px;border-color:var(--border-2);z-index:6;pointer-events:none;}
+.vp.tl{top:12px;left:12px;border-top:1px solid;border-left:1px solid;}
+.vp.tr{top:12px;right:12px;border-top:1px solid;border-right:1px solid;}
+.vp.bl{bottom:12px;left:12px;border-bottom:1px solid;border-left:1px solid;}
+.vp.br{bottom:12px;right:12px;border-bottom:1px solid;border-right:1px solid;}
+
+/* ── top ── */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:26px var(--gut) 0;pointer-events:none;}
+.topbar > *{pointer-events:auto;}
+.wm{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:42px;letter-spacing:15px;line-height:1;}
+.wm-sub{font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:5px;color:var(--muted);margin-top:10px;}
+.wm-tag{font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:22px;letter-spacing:.4px;color:var(--primary);margin-top:6px;white-space:nowrap;}
+.wm-tag .ag{color:var(--mint);} .wm-tag .hu{color:var(--coral);}
+
+/* active org (P0-38): which Paperclip company the page shows; any active one can be picked */
+.orgbar{position:absolute;top:112px;left:50%;transform:translateX(-50%);z-index:6;text-align:center;}
+.org-btn{display:inline-flex;align-items:baseline;gap:12px;padding:7px 16px;border:1px solid var(--border);border-radius:999px;background:rgba(23,23,23,0.75);backdrop-filter:blur(6px);color:var(--fg);cursor:pointer;font:inherit;transition:border-color .15s,background .15s;}
+.org-btn:hover,.org-btn[aria-expanded="true"]{border-color:var(--border-2);background:var(--raised);}
+.org-btn .ol{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:2.5px;color:var(--dim);}
+.org-btn .on{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:20.5px;letter-spacing:1px;white-space:nowrap;}
+.org-btn .pf{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);letter-spacing:1px;}
+.org-btn .chev{font-size:14px;color:var(--muted);}
+.org-btn i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px var(--mint);align-self:center;}
+.org-btn.stale i{background:var(--coral);box-shadow:none;}
+.org-menu{display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);min-width:300px;border:1px solid var(--border-2);border-radius:10px;background:var(--bg);box-shadow:0 24px 60px rgba(0,0,0,0.55);overflow:hidden;text-align:left;}
+.org-menu.open{display:block;}
+.org-menu .hd{padding:10px 16px 6px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:2px;color:var(--dim);}
+.org-menu button,.org-menu a{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:none;border:none;color:var(--muted);font:inherit;font-size:20px;cursor:pointer;text-align:left;}
+.org-menu button:hover,.org-menu a:hover{background:var(--raised);color:var(--fg);}
+.org-menu button.on{color:var(--fg);} .org-menu button.on::after{content:'●';color:var(--mint);font-size:11px;margin-left:auto;}
+.org-menu .tg{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:1px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:0 5px;}
+.org-menu a{border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;}
+.kpis{display:flex;border:1px solid var(--border);border-radius:9px;background:rgba(23,23,23,0.75);backdrop-filter:blur(6px);margin-top:4px;}
+.kpi{display:block;padding:10px 16px;border-left:1px solid var(--border);transition:background .15s;}
+.kpi:first-child{border-left:none;}
+.kpi:hover{background:var(--raised);}
+.kpi .k{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:1.2px;color:var(--dim);text-transform:uppercase;white-space:nowrap;}
+.kpi .v{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:30px;line-height:1.1;margin-top:3px;white-space:nowrap;}
+.kpi .v small{font-size:16px;color:var(--dim);font-weight:400;margin-left:2px;}
+.kpi.human .v{color:var(--coral);}
+.kpi.live .v{color:var(--mint);}
+.clock{text-align:right;}
+.clock .time{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:39px;letter-spacing:3px;line-height:1;}
+.clock .time small{font-size:19px;color:var(--muted);}
+.clock .date{font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:3px;color:var(--dim);margin-top:6px;}
+.mode{display:inline-block;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2.5px;padding:4px 10px;border:1px solid var(--border-2);border-radius:4px;}
+.mode i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:6px;box-shadow:0 0 8px var(--mint);animation:pulse 1.7s infinite;}
+.mode.warn{border-color:rgba(var(--coral-rgb),0.45);color:var(--coral);}
+.mode.warn i{background:var(--coral);box-shadow:none;animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.signal{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:2px;color:var(--dim);margin-top:8px;text-transform:uppercase;}
+.spin-track{width:120px;height:2px;background:var(--raised);margin:5px 0 0 auto;border-radius:2px;overflow:hidden;}
+.spin-fill{height:100%;width:0;background:var(--mint);}
+
+/* ── rails ── */
+.rail{position:absolute;top:160px;bottom:70px;z-index:5;width:var(--rail);overflow:hidden;}
+.rail.l{left:var(--gut);}
+.rail.r{right:var(--gut);display:flex;flex-direction:column;}
+.dept{display:flex;align-items:center;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:6px;font-size:19.5px;color:var(--muted);transition:background .14s,color .14s;}
+.dept:hover,.dept.hot{background:var(--raised);color:var(--fg);}
+.dept .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex-shrink:0;}
+.dept .dot.working{background:var(--mint);box-shadow:0 0 8px var(--mint);}
+.dept .dot.blocked{background:var(--coral);box-shadow:0 0 8px var(--coral);}
+.dept .dot.review{background:var(--primary);}
+.dept .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dept .ct{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--dim);letter-spacing:1px;}
+.dept .bar{width:70px;height:3px;background:var(--raised);border-radius:2px;overflow:hidden;display:flex;}
+.dept .bar i{display:block;height:100%;}
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.vital{display:block;border:1px solid var(--border);border-radius:8px;padding:9px 12px;background:rgba(23,23,23,0.65);transition:background .15s,border-color .15s;}
+.vital:hover{background:var(--raised);border-color:var(--border-2);}
+.vital .lbl{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:1.8px;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+.vital .num{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:31px;line-height:1.1;margin-top:3px;}
+.vital .num sub{font-size:15px;color:var(--dim);font-weight:400;}
+.vital .dl{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);margin-top:2px;}
+.vital svg{width:100%;height:18px;margin-top:4px;display:block;overflow:visible;}
+.dir{display:flex;gap:10px;padding:6px 8px;margin:0 -8px;border-radius:6px;font-size:19px;line-height:1.3;color:var(--muted);transition:background .14s;}
+.dir:hover{background:var(--raised);color:var(--fg);}
+.dir .box{width:12px;height:12px;border:1px solid var(--border-2);flex-shrink:0;margin-top:4px;}
+.dir.blocked .box{border-color:rgba(var(--coral-rgb),0.7);}
+.dir .id{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);letter-spacing:1px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dir .ttl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dir > span:last-child{min-width:0;}
+
+.deck{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;}
+.cmd{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid transparent;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;transition:all .14s;}
+.cmd::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.cmd:hover,.cmd:focus-visible{color:var(--fg);border-color:var(--border);background:var(--raised);outline:none;}
+.cmd .k{margin-left:auto;font-size:12.5px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:0 5px;}
+.cmd.off{opacity:.35;pointer-events:none;}
+.cmd[data-key="builder"],.cmd[data-key="langflow"]{grid-column:span 2;}   /* the two agent builders get a full row each */
+.cmd.off .k{display:none;}
+.eq{display:flex;gap:2px;height:34px;align-items:flex-end;}
+.eq i{flex:1;border-radius:1px;background:var(--faint);height:10%;transition:background .4s;}
+.eq.on i{background:linear-gradient(to top,rgba(var(--mint-rgb),0.35),var(--mint));}
+.run{margin-top:10px;font-size:19px;color:var(--muted);line-height:1.35;}
+.run b{color:var(--fg);font-weight:600;}
+.run.on b{color:var(--mint);}
+.run .m{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);letter-spacing:.5px;}
+.tok{display:flex;height:3px;border-radius:2px;overflow:hidden;background:var(--raised);margin-top:6px;}
+.tok i{display:block;height:100%;}
+.call{display:flex;gap:7px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--dim);margin-top:6px;white-space:nowrap;overflow:hidden;}
+.call .a{color:var(--muted);overflow:hidden;text-overflow:ellipsis;max-width:46%;}
+.call .t{color:var(--fg);overflow:hidden;text-overflow:ellipsis;}
+.wire{flex:1 1 auto;min-height:0;overflow:hidden;}
+.wi{display:flex;gap:9px;margin-bottom:7px;font-size:18px;line-height:1.3;color:var(--muted);}
+.wi .c{color:var(--fg);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:14px;margin-top:2px;}
+.wi.human .c{color:var(--coral);}
+.wi .tx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.wi .tk{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--dim);display:block;}
+
+/* ── hero ── */
+.hero{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);z-index:5;text-align:center;width:min(640px,46vw);}
+.hero > a{display:block;}
+.hero .hl{font-family:'JetBrains Mono',monospace;font-size:14.5px;letter-spacing:4.5px;color:var(--muted);}
+.hero .hl b{color:var(--coral);font-weight:500;}
+.hero .hn{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:92px;line-height:.95;margin-top:6px;}
+.hero > a:hover .hn{text-shadow:0 0 28px rgba(255,255,255,0.25);}
+.hero .hn .unit{font-size:25.5px;color:var(--muted);letter-spacing:6px;margin-left:12px;}
+.hero .bar{height:2px;background:var(--border);margin:12px auto 0;position:relative;width:320px;}
+.hero .bar::before{content:'';position:absolute;left:0;top:0;height:100%;width:var(--fill,50%);background:linear-gradient(90deg,var(--coral),transparent);transition:width .6s;}
+.hero .next{display:flex;gap:10px;justify-content:center;align-items:baseline;margin-top:11px;font-size:20px;color:var(--muted);white-space:nowrap;overflow:hidden;}
+.hero .next .p{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2.5px;color:var(--coral);flex-shrink:0;}
+.hero .next span:last-child{overflow:hidden;text-overflow:ellipsis;}
+.hero .next:hover{color:var(--fg);}
+
+/* ── bottom ── */
+.bottom{position:absolute;left:var(--gut);right:var(--gut);bottom:22px;z-index:5;display:flex;align-items:center;gap:18px;font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;}
+.pipe{display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.pipe a{display:flex;gap:7px;align-items:baseline;padding:4px 10px;border:1px solid var(--border);border-radius:5px;color:var(--muted);transition:background .14s;}
+.pipe a:hover{background:var(--raised);color:var(--fg);}
+.pipe a b{font-family:'Chakra Petch',sans-serif;font-size:20px;color:var(--fg);font-weight:600;letter-spacing:0;}
+.pipe a.hot{border-color:rgba(var(--coral-rgb),0.45);} .pipe a.hot b{color:var(--coral);}
+.pipe .ar{color:var(--faint);}
+.hint{margin-left:auto;white-space:nowrap;}
+.hint kbd{font-family:inherit;border:1px solid var(--border);border-radius:3px;padding:0 5px;color:var(--muted);}
+.health{display:flex;gap:6px;}
+.pill{white-space:nowrap;font-size:12.5px;letter-spacing:1.5px;padding:4px 9px;border:1px solid var(--border);border-radius:999px;color:var(--muted);display:flex;align-items:center;gap:6px;background:rgba(23,23,23,0.7);}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--primary);}
+.pill.down{color:var(--fg);border-color:rgba(var(--coral-rgb),0.45);} .pill.down::before{background:var(--coral);}
+
+#tip{position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-140%);
+  background:rgba(23,23,23,0.96);border:1px solid var(--border-2);border-radius:6px;padding:9px 13px;
+  font-family:'JetBrains Mono',monospace;font-size:15px;letter-spacing:1px;white-space:nowrap;}
+#tip small{display:block;color:var(--dim);font-size:13px;margin-top:3px;}
+
+/* ── command palette ── */
+#pal{position:fixed;inset:0;z-index:20;background:rgba(10,10,10,0.6);display:none;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#pal.open{display:flex;}
+.cmdk{width:min(620px,calc(100vw - 32px));border:1px solid var(--border-2);border-radius:10px;overflow:hidden;background:var(--bg);box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+.cmdk .in{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:19px;}
+.cmdk .in .p{color:var(--dim);}
+.cmdk input{flex:1;background:transparent;border:none;outline:none;color:var(--fg);font:inherit;}
+.cmdk kbd{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:1px 6px;}
+.cmdk .rows{max-height:50vh;overflow:auto;}
+.cmdk .row{display:flex;justify-content:space-between;gap:16px;padding:11px 18px;font-size:20px;color:var(--muted);cursor:pointer;}
+.cmdk .row.on{background:var(--raised);color:var(--fg);}
+.cmdk .row span:last-child{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.cmdk .row.human span:last-child{color:var(--coral);}
+
+@media (max-width:1640px){ .hint{display:none;} .health{margin-left:auto;} }
+@media (max-width:1440px){ :root{--rail:310px;--gut:24px;} .kpi{padding:9px 12px;} .kpi .k{font-size:11.5px;letter-spacing:1px;} .wm-tag{white-space:normal;max-width:280px;line-height:1.2;font-size:20px;} .wm{font-size:38px;letter-spacing:12px;}
+  .clock .time{font-size:32px;} .cmd{letter-spacing:.4px;font-size:12px;padding:6px 5px;gap:5px;} .vital .lbl{letter-spacing:.8px;font-size:11.5px;} .vital{padding:9px 10px;} .bottom > span:first-child{display:none;} .bottom{gap:12px;} .pill{font-size:11.5px;letter-spacing:1px;padding:4px 8px;} .kpi .v{font-size:25.5px;} .hint{display:none;} .health{margin-left:auto;} }
+@media (max-height:960px) and (min-width:1101px){ .dir:nth-child(n+2){display:none;} }
+@media (max-height:820px) and (min-width:1101px){ .block.dirs{display:none;} .hero .hn{font-size:76px;} }
+
+/* narrow screens: one column, page scrolls */
+@media (max-width:1100px){
+  body{overflow:auto;}
+  .stage{height:auto;min-height:0;display:flex;flex-direction:column;padding:0 16px 40px;}
+  .topbar{position:relative;padding:22px 0 0;flex-wrap:wrap;order:1;}
+  .clock{text-align:left;} .spin-track{margin-left:0;}
+  .kpis{order:3;width:100%;flex-wrap:wrap;}
+  .kpi{flex:1 1 30%;border-left:none;border-top:1px solid var(--border);}
+  .sky{position:relative;inset:auto;height:420px;margin-top:8px;order:3;}
+  .hero{position:relative;left:auto;bottom:auto;transform:none;order:4;width:auto;margin-top:26px;}
+  .rail{position:relative;top:auto;bottom:auto;left:auto!important;right:auto!important;width:auto!important;overflow:visible;margin-top:30px;}
+  .rail.r{order:5;} .rail.l{order:6;}
+  .bottom{position:relative;left:auto;right:auto;bottom:auto;order:7;flex-wrap:wrap;margin-top:28px;}
+  .pipe,.health{flex-wrap:wrap;white-space:normal;} .health{margin-left:0;}
+  .floor,.hint,.vp{display:none;}
+  .orgbar{position:relative;top:auto;left:auto;transform:none;order:2;margin-top:18px;text-align:left;}
+  .org-menu{left:0;transform:none;max-width:100%;min-width:0;}
+  .org-btn{max-width:100%;flex-wrap:wrap;gap:6px 10px;border-radius:16px;}
+  .org-btn .on{white-space:normal;overflow-wrap:anywhere;min-width:0;font-size:18px;}
+  .wm-tag{white-space:normal;}
+  .rail .eyebrow{white-space:normal;min-width:0;overflow-wrap:anywhere;}
+}
+@media (max-width:520px){ .wm{font-size:34.5px;letter-spacing:10px;} .clock .time{font-size:30px;} .hero .hn{font-size:64px;} .sky{height:340px;} }
+@media (min-width:901px) and (max-height:800px){body{overflow-y:auto}.stage{min-height:800px}}
+</style>
+</head>
+<body>
+<div class="floor"></div>
+<div class="vp tl"></div><div class="vp tr"></div><div class="vp bl"></div><div class="vp br"></div>
+
+<main class="stage">
+  <div class="sky" id="box"><canvas id="sky" aria-label="The organization on a revolving sphere; hover a node for the agent, click to open it"></canvas></div>
+
+  <div class="orgbar">
+    <button class="org-btn" id="orgBtn" aria-haspopup="listbox" aria-expanded="false"><i></i><span class="ol">ACTIVE ORG</span><span class="on" id="orgActive">—</span><span class="pf" id="orgPrefix"></span><span class="chev">▾</span></button>
+    <div class="org-menu" id="orgMenu" role="listbox"></div>
+  </div>
+
+  <header class="topbar">
+    <div>
+      <div class="wm">ATLAS</div>
+      <div class="wm-sub">HIVE · PROVING GROUND</div>
+      <div class="wm-tag">Where <span class="ag">agents</span> and <span class="hu">humans</span> work as one</div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="clock">
+      <div class="time" id="clock">--:--<small>:--</small></div>
+      <div class="date" id="date">—</div>
+      <div class="mode" id="mode"><i></i>CONNECTING</div>
+      <div class="signal">Signal · <span id="spinVal">0%</span><div class="spin-track"><div class="spin-fill" id="spinFill"></div></div></div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <a id="heroLink" href="#">
+      <div class="hl">DECISIONS <b>AWAITING A HUMAN</b></div>
+      <div class="hn"><span id="heroNum">–</span><span class="unit">OPEN</span></div>
+    </a>
+    <div class="bar" id="heroBar"></div>
+    <a class="next" id="heroNext" href="#"></a>
+  </section>
+
+  <aside class="rail l">
+    <div class="rh"><span class="eyebrow">DEPARTMENTS <span class="muted" id="orgName">ORG.LINK</span></span><span class="hairline"></span></div>
+    <div id="depts"><div class="empty">Loading…</div></div>
+    <div class="block">
+      <div class="rh"><span class="eyebrow">VITALS</span><span class="hairline"></span></div>
+      <div class="vitals" id="vitals"></div>
+    </div>
+    <div class="block dirs">
+      <div class="rh"><span class="eyebrow">DIRECTIVES <span class="muted">TOP</span></span><span class="hairline"></span></div>
+      <div id="directives"></div>
+    </div>
+  </aside>
+
+  <aside class="rail r">
+    <div class="rh"><span class="eyebrow">COMMAND DECK <span class="muted">1–9 · ⌘K</span></span><span class="hairline"></span></div>
+    <nav class="deck" id="deck"></nav>
+    <div class="block">
+      <div class="rh"><span class="eyebrow">AGENT I/O <span class="muted" id="ioState">IDLE</span></span><span class="hairline"></span></div>
+      <div class="eq" id="eq"></div>
+      <div id="io"></div>
+    </div>
+    <div class="block wire">
+      <div class="rh"><span class="eyebrow">AGENT WIRE <span class="muted">LIVE.INTEL</span></span><span class="hairline"></span></div>
+      <div id="wire"><div class="empty">Loading…</div></div>
+    </div>
+  </aside>
+
+  <footer class="bottom">
+    <span>Pipeline</span>
+    <div class="pipe" id="pipe"></div>
+    <span class="hint"><kbd>⌘K</kbd> search · <kbd>1</kbd>–<kbd>9</kbd> jump · drag to spin</span>
+    <div class="health" id="health"></div>
+  </footer>
+</main>
+
+<div id="tip"></div>
+<div id="pal" role="dialog" aria-label="Search">
+  <div class="cmdk">
+    <div class="in"><span class="p">hive&gt;</span><input id="palIn" placeholder="Jump to a page, an agent, a task or a decision" autocomplete="off"><kbd>ESC</kbd></div>
+    <div class="rows" id="palRows"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════ HELPERS ══════════ */
+const EXPLORER = "__EXPLORER__";   // replaced by the server; Explorer-relative links are rewritten to it
+const abs = (href) => (href && href.startsWith("/") ? EXPLORER + href : href);
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (n) => Number(n ?? 0).toLocaleString("en-GB");
+const usd = (v) => "$" + Number(v ?? 0).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const short = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + "K" : String(n ?? 0));
+function ago(iso) {
+  if (!iso) return "—";
+  const s = (Date.now() - Date.parse(iso)) / 1000;
+  return s < 60 ? "now" : s < 3600 ? Math.floor(s / 60) + "m" : s < 86400 ? Math.floor(s / 3600) + "h" : Math.floor(s / 86400) + "d";
+}
+const SHORT = { org: "Org", builder: "Agent Builder 1", langflow: "Agent Builder 2", office: "Back office", decisions: "Decisions", catalogue: "Catalogue", apis: "API desk", twin: "BSS twin", crm: "A-CRM twin", ontology: "Telco onto", "ontology-healthcare": "Health onto", "ontology-banking": "Banking onto" };
+const HOTKEYS = ["org", "builder", "langflow", "live", "catalogue", "office", "decisions", "ontology", "approvals"];
+let state = null, lastPulse = null, ioLevel = 0.06, hotDept = -1;
+const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch { /* storage off: the choice lasts this visit */ } } };
+let company = new URLSearchParams(location.search).get("org") || store.get("hive.org") || "";   // a pinned Paperclip issuePrefix; empty = follow the org open in Paperclip
+
+/* ══════════ RENDER ══════════ */
+const meter = (parts) => `<div class="bar">${parts.map(([v, col]) => `<i style="width:${Math.max(0, Math.min(100, v))}%;background:${col}"></i>`).join("")}</div>`;
+function spark(runs) {
+  if (!runs?.length) return "";
+  const max = Math.max(1, ...runs.map((r) => r.total)), step = 120 / Math.max(1, runs.length - 1);
+  return `<svg viewBox="0 0 120 18" preserveAspectRatio="none"><polyline fill="none" stroke="#A1A1A1" stroke-width="1.2" points="${runs.map((r, i) => `${(i * step).toFixed(1)},${(17 - (r.total / max) * 15).toFixed(1)}`).join(" ")}"/></svg>`;
+}
+const vital = (href, label, num, extra) => `<a class="vital" href="${esc(href ?? "#")}"><div class="lbl">${label}</div><div class="num">${num}</div>${extra}</a>`;
+
+function render(d) {
+  state = d;
+  const o = d.org, down = !!o.down, org = d.links.org;
+  const live = (href) => (org && href ? href : "#");
+  const tree = o.tree ?? { lead: null, departments: [], free: [] };
+
+  $("mode").innerHTML = "<i></i>" + ({ live: "LIVE", partial: "PARTIAL", snapshot: "SNAPSHOT", offline: "OFFLINE" }[d.mode] ?? d.mode.toUpperCase());
+  $("mode").className = "mode" + (d.mode === "live" ? "" : " warn");
+  $("health").innerHTML = d.services.map((s) => `<span class="pill${s.ok ? "" : " down"}" title="${s.ok ? "Up" : "Not answering"}">${esc(s.label)}</span>`).join("");
+  // active org
+  const comps = d.companies ?? [];
+  $("orgActive").textContent = down ? "Offline" : o.company ?? "—";
+  const following = !company && !!d.follow;
+  $("orgPrefix").textContent = down ? "" : (o.prefix ?? "") + (following ? " · SYNCED" : company ? " · PINNED" : "");
+  $("orgBtn").title = following ? "Standalone synthetic organization" : company ? "Pinned here; pick Demo organization to sync again" : "Standalone synthetic organization";
+  $("orgBtn").classList.toggle("stale", down || !!o.stale);
+  $("orgMenu").innerHTML = `<div class="hd">DEMO ORGANIZATION</div><button data-org="" class="${company ? "" : "on"}">Demo organization <span class="tg">SYNC</span></button>` + (comps.map((x) =>
+    `<button data-org="${esc(x.prefix)}" class="${company && x.prefix === o.prefix ? "on" : ""}">${esc(x.name)} <span class="tg">${esc(x.prefix)}</span>${x.preview ? ' <span class="tg">DEMO</span>' : ""}</button>`).join("")
+    || `<div class="hd">${down ? "Demo data unavailable" : "Only this organization"}</div>`) + (org ? `<a href="/organization">Open agent roster ↗</a>` : "");
+  $("orgName").textContent = down ? "ORG OFFLINE" : o.stale ? "SNAPSHOT " + new Date(o.savedAt).toLocaleTimeString("en-GB") : "· " + (o.company ?? "ORG").toUpperCase();
+  const k = o.kpi ?? {};
+  $("kpis").innerHTML = down ? `<div class="kpi"><div class="k">Organization</div><div class="v">offline</div></div>` : [
+    ["Runs today", fmt(k.runsToday), live(`/organization`)],
+    ["Success · 14d", k.success14 == null ? "—" : `${k.success14}<small>%</small>`, live(`/organization`)],
+    ["Tokens · 7d", short(k.tokens7d), live(`/organization`)],
+    ["Cost · 7d", usd(k.cost7d), live(`/organization`)],
+    ["Agents live", fmt(o.agents.running), live(`/organization`), o.agents.running ? "live" : ""],
+    ["Open decisions", fmt(k.decisions), live(`/twin/live#sandbox`), "human"],
+  ].map(([label, v, href, cls]) => `<a class="kpi ${cls ?? ""}" href="${esc(href)}"><div class="k">${label}</div><div class="v">${v}</div></a>`).join("");
+
+  // departments
+  $("depts").innerHTML = down ? `<div class="empty">Unknown while the organization is offline.</div>` : (tree.departments.map((dp, i) => {
+    const all = [dp.lead, ...dp.agents], n = (s) => all.filter((a) => a.state === s).length;
+    const dot = n("working") ? "working" : n("blocked") ? "blocked" : n("review") ? "review" : "";
+    return `<a class="dept" data-dept="${i}" href="${esc(live(dp.lead.href))}"><span class="dot ${dot}"></span><span class="nm">${esc(dp.name)}</span><span class="ct">${all.length}</span>${meter([[n("working") / all.length * 100, "#36E0AD"], [n("review") / all.length * 100, "#E5E5E5"], [n("blocked") / all.length * 100, "#FF7E46"], [n("waiting") / all.length * 100, "rgba(54,224,173,.5)"], [n("idle") / all.length * 100, "#737373"]])}</a>`;
+  }).join("") || `<div class="empty">No departments.</div>`);
+  document.querySelectorAll(".dept").forEach((el) => { el.addEventListener("mouseenter", () => (hotDept = +el.dataset.dept)); el.addEventListener("mouseleave", () => (hotDept = -1)); });
+
+  // vitals, directives
+  const tasksOpen = o.pipeline ? o.pipeline.queued + o.pipeline.inProgress + o.pipeline.review + o.pipeline.blocked : 0;
+  $("vitals").innerHTML = (down ? "" : [
+    vital(live(`/organization`), "Agents active", `${fmt(o.agents.active)}<sub> / ${fmt(o.agents.total)}</sub>`, `<div class="dl">${fmt(o.agents.running)} running · ${fmt(o.agents.paused)} paused</div>`),
+    vital(live(`/twin/live#sandbox`), "Tasks open", fmt(tasksOpen), `<div class="dl">${fmt(o.pipeline?.blocked ?? 0)} blocked · ${fmt(o.pipeline?.review ?? 0)} review</div>`),
+    vital(live(`/organization`), "Runs · 14 days", fmt(o.runs.reduce((a, r) => a + r.total, 0)), spark(o.runs)),
+  ].join("")) + vital(abs("/twin/live"), "Twin subscribers", short(d.twin.customers), `<div class="dl">${fmt(d.twin.offers)} offers · ${fmt(d.twin.drafts)} drafts</div>`);
+  $("directives").innerHTML = down ? "" : (o.directives.map((x) =>
+    `<a class="dir ${x.status}" href="${esc(live(x.href))}"><span class="box"></span><span><span class="id">${esc(x.id)} · ${esc(x.status.replace(/_/g, " "))}${x.agent ? " · " + esc(x.agent) : ""}</span><span class="ttl">${esc(x.title)}</span></span></a>`).join("") || `<div class="empty">No open tasks.</div>`);
+
+  // command deck
+  const keyOf = {}; HOTKEYS.forEach((key, i) => (keyOf[key] = i + 1));
+  const items = d.sections.flatMap((s) => s.items);
+  items.sort((a, b) => (keyOf[a.key] ?? 99) - (keyOf[b.key] ?? 99));
+  $("deck").innerHTML = items.map((i) => `<a class="cmd${i.href ? "" : " off"}" href="${esc(abs(i.href) ?? "#")}" data-key="${esc(i.key)}" title="${esc(i.label)}">${esc(SHORT[i.key] ?? i.label.replace("Builder · ", "").replace(/ Ontology$/, " onto"))}${keyOf[i.key] ? `<span class="k">${keyOf[i.key]}</span>` : ""}</a>`).join("");
+
+  // Agent I/O
+  const io = o.io ?? { live: [], last: null };
+  const streaming = !down && (io.live.length > 0 || d.calls.perMin > 0);
+  $("ioState").textContent = streaming ? (io.live.length ? `${io.live.length} LIVE RUN${io.live.length > 1 ? "S" : ""}` : "STREAMING") : "IDLE";
+  ioLevel = down ? 0.04 : Math.min(1, 0.06 + io.live.length * 0.45 + d.calls.perMin * 0.15);
+  let run = "";
+  if (io.live.length) run = io.live.slice(0, 2).map((r) => `<div class="run on"><span class="m">LIVE · ${ago(r.startedAt)}</span><br><b>${esc(r.agent)}</b> is running</div>`).join("");
+  else if (io.last) {
+    const l = io.last, tot = Math.max(1, l.inTokens + l.outTokens);
+    run = `<div class="run"><span class="m">LAST RUN · ${ago(l.at)} · ${esc(l.model ?? "")}</span><br><b>${esc(l.agent)}</b> · ${short(l.inTokens)} in · ${short(l.outTokens)} out · ${usd(l.costUsd)}
+      <div class="tok"><i style="width:${l.inTokens / tot * 100}%;background:#A1A1A1"></i><i style="width:${l.outTokens / tot * 100}%;background:#FAFAFA"></i></div></div>`;
+  } else if (!down) run = `<div class="run"><span class="m">No runs yet</span></div>`;
+  $("io").innerHTML = run + d.calls.calls.slice(0, 3).map((c) => `<div class="call"><span class="a">${esc(c.agent)}</span><span>→</span><span class="t">${esc(c.target)}</span><span class="when">${ago(c.at)}</span></div>`).join("");
+
+  // wire
+  $("wire").innerHTML = down ? `<div class="empty">Unknown while the organization is offline.</div>` : (o.wire.map((w) =>
+    `<div class="wi${w.human ? " human" : ""}"><span class="c">${w.human ? "◆" : "▸"}</span><span><span class="tx">${esc(w.text)}</span>${w.tokens ? `<span class="tk">${short(w.tokens)} tokens</span>` : ""}</span><span class="when">${ago(w.at)}</span></div>`).join("") || `<div class="empty">Quiet.</div>`);
+
+  // hero
+  $("heroNum").textContent = down ? "–" : fmt(o.attention.total);
+  $("heroLink").href = live(`/twin/live#sandbox`);
+  $("heroBar").style.setProperty("--fill", down ? "0%" : Math.min(100, o.attention.total * 8) + "%");
+  const first = !down && o.attention.items[0];
+  $("heroNext").innerHTML = first ? `<span class="p">NEXT ◆</span><span>${esc(first.title)}</span>` : "";
+  $("heroNext").href = first ? live(first.href) : "#";
+
+  // pipeline
+  const p = o.pipeline ?? { queued: 0, inProgress: 0, review: 0, blocked: 0, done: 0 };
+  $("pipe").innerHTML = down ? `<span>—</span>` : [["Queued", p.queued], ["In progress", p.inProgress], ["Review", p.review, true], ["Blocked", p.blocked, true], ["Done", p.done]]
+    .map(([l, v, h], i) => `${i ? '<span class="ar">→</span>' : ""}<a class="${h && v ? "hot" : ""}" href="${esc(live(`/twin/live#sandbox`))}"><b>${fmt(v)}</b>${l}</a>`).join("");
+
+  bindOrg(down ? null : tree, live);
+  if (!down && lastPulse !== null && o.pulse !== lastPulse) burst(1);
+  if (!down) lastPulse = o.pulse;
+}
+
+async function load() {
+  try { render(await (await fetch("/data/hive.json" + (company ? "?company=" + encodeURIComponent(company) : ""), { cache: "no-store" })).json()); }
+  catch { $("mode").innerHTML = "<i></i>OFFLINE"; $("mode").className = "mode warn"; }
+}
+
+/* ══════════ ORG SWITCHER ══════════ */
+const orgMenu = (open) => { $("orgMenu").classList.toggle("open", open); $("orgBtn").setAttribute("aria-expanded", open); };
+$("orgBtn").addEventListener("click", (e) => { e.stopPropagation(); orgMenu(!$("orgMenu").classList.contains("open")); });
+$("orgMenu").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-org]"); if (!b) return;
+  company = b.dataset.org; store.set("hive.org", company); orgMenu(false);
+  const u = new URL(location.href); company ? u.searchParams.set("org", company) : u.searchParams.delete("org"); history.replaceState(null, "", u);
+  $("orgActive").textContent = "…"; load();
+});
+addEventListener("click", (e) => { if (!e.target.closest(".orgbar")) orgMenu(false); });
+
+/* ══════════ CLOCK ══════════ */
+function tick() {
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  $("clock").innerHTML = `${p(d.getHours())}:${p(d.getMinutes())}<small>:${p(d.getSeconds())}</small>`;
+  $("date").textContent = d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase().replace(/,/g, " ·");
+}
+tick(); setInterval(tick, 1000);
+
+/* ══════════ COMMAND PALETTE + KEYS ══════════ */
+let palItems = [], palSel = 0;
+function palData() {
+  if (!state) return [];
+  const o = state.org, org = state.links.org;
+  const pages = state.sections.flatMap((s) => s.items.filter((i) => i.href).map((i) => ({ label: i.label, tag: s.label, href: abs(i.href) })));
+  if (o.down || !org) return pages;
+  const asks = o.attention.items.map((i) => ({ label: i.title, tag: "awaiting human", href: i.href, human: true }));
+  const tasks = o.directives.map((x) => ({ label: `${x.id} ${x.title}`, tag: x.status.replace(/_/g, " "), href: x.href }));
+  const agents = (o.tree?.departments ?? []).flatMap((dp) => [dp.lead, ...dp.agents].map((a) => ({ label: a.name, tag: `${dp.name} · ${a.state}`, href: a.href })));
+  return [...pages, ...asks, ...tasks, ...agents];
+}
+function palDraw() {
+  const q = $("palIn").value.trim().toLowerCase();
+  palItems = palData().filter((i) => !q || q.split(/\s+/).every((w) => (i.label + " " + i.tag).toLowerCase().includes(w)));
+  palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+  $("palRows").innerHTML = palItems.slice(0, 40).map((i, n) => `<div class="row${n === palSel ? " on" : ""}${i.human ? " human" : ""}" data-n="${n}"><span>${esc(i.label)}</span><span>${esc(i.tag)}</span></div>`).join("")
+    || `<div class="row"><span>No match</span><span></span></div>`;
+}
+const palOpen = () => { $("pal").classList.add("open"); $("palIn").value = ""; palSel = 0; palDraw(); $("palIn").focus(); };
+const palClose = () => $("pal").classList.remove("open");
+const go = (href, e) => { if (!href || href === "#") return; if (e?.metaKey || e?.ctrlKey) window.open(href, "_blank"); else location.href = href; };
+$("palIn").addEventListener("input", () => { palSel = 0; palDraw(); });
+$("palRows").addEventListener("click", (e) => { const r = e.target.closest("[data-n]"); if (r) go(palItems[+r.dataset.n]?.href, e); });
+$("pal").addEventListener("click", (e) => { if (e.target.id === "pal") palClose(); });
+addEventListener("keydown", (e) => {
+  const open = $("pal").classList.contains("open");
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); open ? palClose() : palOpen(); return; }
+  if (open) {
+    if (e.key === "Escape") palClose();
+    else if (e.key === "ArrowDown") { palSel = Math.min(palItems.length - 1, palSel + 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { palSel = Math.max(0, palSel - 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "Enter") go(palItems[palSel]?.href, e);
+    return;
+  }
+  if (e.target.matches?.("input,textarea")) return;
+  if (e.key === "/") { e.preventDefault(); palOpen(); return; }
+  if (/^[1-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    const a = document.querySelector(`.cmd[data-key="${HOTKEYS[+e.key - 1]}"]`);
+    if (a && !a.classList.contains("off")) go(a.href, e);
+  }
+});
+
+/* ══════════ I/O BARS ══════════ */
+const eq = $("eq"), bars = [];
+for (let i = 0; i < 34; i++) { const b = document.createElement("i"); eq.appendChild(b); bars.push({ el: b, ph: Math.random() * 6.28, sp: 2 + Math.random() * 3 }); }
+function drawBars(t, E) {
+  const level = Math.min(1, ioLevel + E * 0.5);
+  eq.classList.toggle("on", level > 0.3);
+  bars.forEach((b, i) => { const h = 0.08 + level * (0.35 + 0.65 * Math.abs(Math.sin(t * b.sp + b.ph + i * 0.3))); b.el.style.height = Math.min(100, h * 100) + "%"; });
+}
+
+/* ══════════ ORG SPHERE ══════════
+   The organization on a revolving globe (P0-38). Each department is a region on the surface: its lead at the centre of
+   the region, its agents spiralled around it, tied to the lead by arcs along the surface. The org lead is the glowing
+   core, tied to the department leads by spokes. Free agents (Jarvis) ride an orbit outside. The globe turns slowly on a
+   tilted axis; a drag or new org activity spins it. Front of the globe is bright and labelled, the back is dim. */
+const cv = $("sky"), c = cv.getContext("2d"), box = $("box"), tip = $("tip");
+const desktop = matchMedia("(min-width:1101px)");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+window.HIVE_VOICE_NATIVE = true;   // Ask HIVE (P0-40): this page draws its own pulse in frame()
+let W = 0, H = 0, CX = 0, CY = 0, R = 0;
+function fit() {
+  const r = box.getBoundingClientRect(), d = devicePixelRatio || 1; W = r.width; H = r.height;
+  cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0);
+  if (desktop.matches) {
+    const css = getComputedStyle(document.documentElement), gut = parseFloat(css.getPropertyValue("--gut")), rail = parseFloat(css.getPropertyValue("--rail"));
+    const room = W - 2 * (gut + rail + 30);
+    CX = W / 2; CY = H * 0.47; R = Math.max(150, Math.min(room / 2 / 1.34, H * 0.27));
+  } else { CX = W / 2; CY = H * 0.5; R = Math.min(W / 2 / 1.34, H * 0.36); }
+}
+new ResizeObserver(fit).observe(box);
+
+const MINT = "54,224,173", CORAL = "255,126,70", WHITE = "250,250,250";
+const LOOK = { working: [MINT, 1], review: [WHITE, 1], blocked: [CORAL, 1], waiting: [MINT, 0.7], idle: [WHITE, 0.85], paused: [WHITE, 0.6] };   // paused draws as a hollow ring
+const TILT = 0.38, PERSP = 0.16, ORBIT = 1.3;
+const unit = (v) => { const l = Math.hypot(v.x, v.y, v.z) || 1; return { x: v.x / l, y: v.y / l, z: v.z / l }; };
+const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x });
+const onSphere = (lat, lon) => ({ x: Math.cos(lat) * Math.cos(lon), y: Math.sin(lat), z: Math.cos(lat) * Math.sin(lon) });
+function slerp(a, b, k) {
+  const dot = Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z)), om = Math.acos(dot);
+  if (om < 1e-4) return a; const s = Math.sin(om), wa = Math.sin((1 - k) * om) / s, wb = Math.sin(k * om) / s;
+  return { x: a.x * wa + b.x * wb, y: a.y * wa + b.y * wb, z: a.z * wa + b.z * wb };
+}
+// a point at angular distance rad from centre L, in direction ang on the tangent plane
+function around(L, rad, ang) {
+  const e1 = unit(Math.abs(L.y) > 0.95 ? cross({ x: 1, y: 0, z: 0 }, L) : cross({ x: 0, y: 1, z: 0 }, L)), e2 = cross(L, e1);
+  const cs = Math.cos(ang), sn = Math.sin(ang), cr = Math.cos(rad), sr = Math.sin(rad);
+  return unit({ x: L.x * cr + (e1.x * cs + e2.x * sn) * sr, y: L.y * cr + (e1.y * cs + e2.y * sn) * sr, z: L.z * cr + (e1.z * cs + e2.z * sn) * sr });
+}
+
+// the shell: fibonacci dots, plus meridians and parallels as point lists
+const shell = [];
+for (let i = 0, N = 720; i < N; i++) { const y = 1 - (i + 0.5) / N * 2, r = Math.sqrt(1 - y * y), th = i * 2.399963; shell.push({ x: r * Math.cos(th), y, z: r * Math.sin(th), tw: Math.random() * 6.28 }); }
+const grat = [];
+for (let m = 0; m < 12; m++) { const lon = m / 12 * Math.PI * 2, pts = []; for (let i = 0; i <= 40; i++) pts.push(onSphere(-Math.PI / 2 + i / 40 * Math.PI, lon)); grat.push({ pts, eq: false }); }
+[-60, -30, 0, 30, 60].forEach((deg) => { const pts = []; for (let i = 0; i <= 64; i++) pts.push(onSphere(deg * Math.PI / 180, i / 64 * Math.PI * 2)); grat.push({ pts, eq: deg === 0 }); });
+
+let nodes = [], boundIds = "";
+function bindOrg(tree, live) {
+  const ids = tree ? JSON.stringify([tree.lead?.id, ...tree.departments.map((d) => [d.id, d.agents.map((a) => a.id)]), tree.free.map((a) => a.id)]) : "";
+  if (ids !== boundIds) {
+    boundIds = ids; nodes = [];
+    if (tree) {
+      const nd = Math.max(1, tree.departments.length);
+      const core = { ...(tree.lead ?? { name: "Organization", state: "idle" }), kind: "core", label: tree.lead ? "OPS LEAD" : "ORG", p: { x: 0, y: 0, z: 0 }, dept: -1, tw: 0 };
+      nodes.push(core);
+      tree.departments.forEach((dp, i) => {
+        const lon = i / nd * Math.PI * 2, lat = (i % 2 ? -1 : 1) * 0.3;
+        const Lp = onSphere(lat, lon);
+        const L = { ...dp.lead, kind: "lead", label: dp.name.toUpperCase(), deptName: dp.name, p: Lp, dept: i, parent: core, tw: Math.random() * 6.28 };
+        nodes.push(L);
+        const n = dp.agents.length, cap = Math.min(Math.PI / nd * 0.82, 0.17 + 0.095 * Math.sqrt(n));
+        L.cap = cap;
+        dp.agents.forEach((ag, j) => nodes.push({ ...ag, kind: "agent", deptName: dp.name, p: around(Lp, cap * Math.sqrt((j + 0.7) / (n + 0.2)), j * 2.399963 + i), dept: i, parent: L, tw: Math.random() * 6.28 }));
+      });
+      tree.free.forEach((ag, j) => nodes.push({ ...ag, kind: "free", label: ag.name.toUpperCase(), deptName: "Free agent", orbit: j * Math.PI + 0.6, dept: -1, tw: Math.random() * 6.28 }));
+    }
+  } else if (tree) {
+    const byId = {}; [tree.lead, ...tree.free, ...tree.departments.flatMap((d) => [d.lead, ...d.agents])].filter(Boolean).forEach((a) => (byId[a.id] = a));
+    nodes.forEach((n) => { const a = byId[n.id]; if (a) { n.state = a.state; n.href = a.href; } });
+  }
+  nodes.forEach((n) => (n.go = live(n.href)));
+}
+
+const BASE = 0.0018, VMAX = 0.035;
+let rot = 0, vel = BASE, kick = 0, dragging = false, moved = false, lastX = 0, mouse = { x: -9999, y: -9999 }, hovered = null;
+function burst(strength) { kick = Math.max(kick, VMAX * 0.8 * strength); }
+cv.addEventListener("mousemove", (e) => { const r = box.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+  if (dragging) { const dx = e.clientX - lastX; if (Math.abs(dx) > 2) moved = true; kick = Math.max(-VMAX, Math.min(VMAX, dx * 0.0022)); lastX = e.clientX; } });
+cv.addEventListener("mouseleave", () => { mouse.x = mouse.y = -9999; dragging = false; });
+cv.addEventListener("mousedown", (e) => { dragging = true; moved = false; lastX = e.clientX; });
+addEventListener("mouseup", () => { dragging = false; });
+cv.addEventListener("click", (e) => { if (hovered && !moved) go(hovered.go, e); });
+
+function cycle(t) { const p = (t % 24) / 24, ease = (x) => x * x * (3 - 2 * x);
+  if (p < 0.6) return 0; if (p < 0.68) return ease((p - 0.6) / 0.08); if (p < 0.8) return 1; if (p < 0.94) return 1 - ease((p - 0.8) / 0.14); return 0; }
+// yaw by rot, then tilt the axis toward the viewer; z > 0 faces the viewer
+let cr = 1, sr = 0; const ct = Math.cos(TILT), st = Math.sin(TILT);
+function proj(p) {
+  const x = p.x * cr + p.z * sr, z1 = -p.x * sr + p.z * cr, y = p.y * ct - z1 * st, z = p.y * st + z1 * ct, pr = 1 / (1 - z * PERSP);
+  return { sx: CX + x * R * pr, sy: CY - y * R * pr, z, pr, d: (z + 1) / 2 };
+}
+function glow(x, y, r, rgb, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); }
+function arc(a, b, front, rgb, alpha, width) {   // along the surface; only the half (front or back) asked for
+  c.strokeStyle = `rgba(${rgb},${alpha})`; c.lineWidth = width; c.beginPath(); let pen = false;
+  for (let i = 0; i <= 10; i++) { const q = proj(slerp(a, b, i / 10)); if ((q.z >= 0) !== front) { pen = false; continue; } pen ? c.lineTo(q.sx, q.sy) : c.moveTo(q.sx, q.sy); pen = true; }
+  c.stroke();
+}
+let lastBars = 0;
+
+function frame(ms) {
+  const t = ms * 0.001;
+  // Ask HIVE (P0-40): while HIVE speaks the sphere breathes, spins up (so it turns mint) and sends rings outward; R is restored at the end
+  const VL = window.HIVE_VOICE?.level ?? 0, R0 = R;
+  if (VL > 0) { R = R0 * (1 + 0.05 * VL); if (!reduceMotion) kick = Math.max(kick, VMAX * 0.45 * VL); }
+  const target = reduceMotion ? BASE * 0.4 : BASE + cycle(t) * (VMAX * 0.5 - BASE);
+  kick *= 0.965;
+  vel += ((Math.abs(kick) > Math.abs(target) ? kick : target) - vel) * 0.06;
+  rot += vel; cr = Math.cos(rot); sr = Math.sin(rot);
+  const E = Math.min(1, Math.max(0, (Math.abs(vel) - BASE) / (VMAX * 0.5)));
+  $("spinVal").textContent = Math.round(E * 100) + "%"; $("spinFill").style.width = E * 100 + "%";
+  if (ms - lastBars > 90) { drawBars(t, E); lastBars = ms; }
+  c.clearRect(0, 0, W, H);
+  if (!R) { requestAnimationFrame(frame); return; }
+
+  // free agents ride their own orbit; place them before projecting
+  for (const n of nodes) if (n.kind === "free") { const a = n.orbit + t * 0.12; n.p = { x: Math.cos(a) * ORBIT, y: Math.sin(a) * 0.42, z: Math.sin(a) * ORBIT }; }
+  const P = nodes.map((n) => ({ n, q: proj(n.p) }));
+  const byNode = new Map(P.map((x) => [x.n, x.q]));
+  const deptLive = {}; for (const n of nodes) if (n.state === "working" && n.dept >= 0) deptLive[n.dept] = true;
+
+  // atmosphere and body
+  glow(CX, CY, R * 1.45, MINT, 0.05 + 0.05 * E);
+  if (VL > 0) { glow(CX, CY, R * 1.7, MINT, 0.18 * VL);
+    for (let k = 0; k < 3; k++) { const ph = (t * 0.7 + k / 3) % 1; c.strokeStyle = `rgba(${MINT},${((1 - ph) * 0.45 * VL).toFixed(3)})`; c.lineWidth = 1.6;
+      c.beginPath(); c.arc(CX, CY, R * (1.03 + ph * 0.55), 0, 6.28); c.stroke(); } }
+  const body = c.createRadialGradient(CX - R * 0.35, CY - R * 0.4, R * 0.1, CX, CY, R);
+  body.addColorStop(0, "rgba(255,255,255,0.045)"); body.addColorStop(0.7, "rgba(255,255,255,0.012)"); body.addColorStop(1, "rgba(0,0,0,0.25)");
+  c.fillStyle = body; c.beginPath(); c.arc(CX, CY, R, 0, 6.28); c.fill();
+
+  // orbit ring for free agents (whole ring, faint)
+  c.setLineDash([2, 5]); c.strokeStyle = `rgba(${WHITE},0.10)`; c.lineWidth = 1; c.beginPath();
+  for (let i = 0; i <= 90; i++) { const a = i / 90 * Math.PI * 2, q = proj({ x: Math.cos(a) * ORBIT, y: Math.sin(a) * 0.42, z: Math.sin(a) * ORBIT }); i ? c.lineTo(q.sx, q.sy) : c.moveTo(q.sx, q.sy); }
+  c.stroke(); c.setLineDash([]);
+
+  const drawGrat = (front) => {
+    for (const g of grat) { c.strokeStyle = `rgba(${g.eq ? MINT : WHITE},${front ? (g.eq ? 0.22 : 0.085) : (g.eq ? 0.07 : 0.03)})`; c.lineWidth = 1; c.beginPath(); let pen = false;
+      for (const p of g.pts) { const q = proj(p); if ((q.z >= 0) !== front) { pen = false; continue; } pen ? c.lineTo(q.sx, q.sy) : c.moveTo(q.sx, q.sy); pen = true; }
+      c.stroke(); }
+  };
+  const drawShell = (front) => {
+    for (const p of shell) { const q = proj(p); if ((q.z >= 0) !== front) continue;
+      const a = front ? (0.12 + 0.3 * q.z) * (0.75 + 0.25 * Math.sin(t * 1.3 + p.tw)) : 0.06; c.fillStyle = `rgba(${WHITE},${a})`; const s = front ? 1.3 * q.pr : 0.9; c.fillRect(q.sx - s / 2, q.sy - s / 2, s, s); }
+  };
+  const drawEdges = (front) => {
+    for (const { n } of P) { if (n.kind !== "agent") continue;   // arc() keeps only the segments on this half
+      const lit = hotDept >= 0 && n.dept === hotDept, live = n.state === "working";
+      const a = front ? 0.28 + (lit ? 0.35 : 0) : 0.06;
+      arc(n.p, n.parent.p, front, live ? MINT : n.state === "blocked" ? CORAL : lit ? MINT : WHITE, live ? a + 0.3 : a, live || lit ? 1.3 : 1);
+      if (live && front) { const k = (t * 0.6 + n.tw) % 1, pp = proj(slerp(n.p, n.parent.p, k)); if (pp.z >= 0) glow(pp.sx, pp.sy, 8, MINT, 0.9); } }
+  };
+  const drawNode = ({ n, q }) => {
+    const base = n.kind === "core" ? 9 : n.kind === "lead" ? 6.5 : n.kind === "free" ? 6 : 4.2, r = base * q.pr;
+    const [rgb, lvl] = LOOK[n.state] ?? LOOK.idle, livep = n.state === "working" || n.state === "blocked", pulse = livep ? 0.75 + 0.25 * Math.sin(t * 2.2 + n.tw) : 1;
+    const lit = hotDept >= 0 && n.dept === hotDept, back = q.z < 0 && n.kind !== "core";
+    const isH = hovered === n;
+    if (livep && !back) glow(q.sx, q.sy, r * 5, rgb, 0.5 * pulse);
+    else if (n.kind === "lead" && !back) glow(q.sx, q.sy, r * 3.2, deptLive[n.dept] ? MINT : WHITE, 0.2);
+    else if ((lit || isH) && !back) glow(q.sx, q.sy, r * 4, MINT, 0.35);
+    const fa = back ? 0.18 * lvl : livep ? 0.65 + 0.35 * pulse : (0.45 + 0.55 * q.z) * lvl + (lit ? 0.25 : 0);
+    if (n.state === "paused" && n.kind === "agent") { c.strokeStyle = `rgba(${rgb},${Math.min(1, fa)})`; c.lineWidth = 1.3; c.beginPath(); c.arc(q.sx, q.sy, r - 0.6 + (isH ? 1.5 : 0), 0, 6.28); c.stroke(); }
+    else { c.fillStyle = `rgba(${rgb},${Math.min(1, fa)})`; c.beginPath(); c.arc(q.sx, q.sy, r + (isH ? 1.5 : 0), 0, 6.28); c.fill(); }
+    if ((n.kind === "lead" || n.kind === "free") && !back) { c.strokeStyle = `rgba(${WHITE},${0.25 + 0.4 * q.z})`; c.lineWidth = 1; c.beginPath(); c.arc(q.sx, q.sy, r + 5, 0, 6.28); c.stroke(); }
+    if (isH) { c.strokeStyle = `rgba(${WHITE},0.9)`; c.lineWidth = 1.2; c.beginPath(); c.arc(q.sx, q.sy, r + 7, 0, 6.28); c.stroke(); }
+    if (back) return;
+    // labels are queued and placed afterwards, front first, so two nodes passing each other never print on top of each other
+    const la = n.kind === "core" ? 0.75 : Math.min(1, 0.35 + 0.85 * q.z), z = q.z + (isH ? 9 : livep || lit ? 2 : n.kind === "lead" ? 1 : 0);
+    if (n.kind === "lead" || n.kind === "free") labels.push({ z, x: q.sx, y: q.sy - r - 11, font: "600 15px 'JetBrains Mono'", col: lit ? `rgba(${MINT},1)` : `rgba(${WHITE},${la})`, text: n.label });
+    if (n.kind === "core") labels.push({ z: -5, x: q.sx, y: q.sy + r + 16, font: "500 13px 'JetBrains Mono'", col: `rgba(${WHITE},${la})`, text: n.label });
+    if (n.kind === "agent" && (n.state === "working" || n.state === "blocked" || lit || isH)) labels.push({ z, x: q.sx, y: q.sy + r + 15, font: "500 14px 'JetBrains Mono'",
+      col: n.state === "blocked" ? `rgba(${CORAL},0.95)` : n.state === "working" ? `rgba(${MINT},0.95)` : `rgba(${WHITE},0.8)`, text: n.name.toUpperCase().replace(" AGENT", ""),
+      sub: n.state === "blocked" ? ["NEEDS YOU", `rgba(${CORAL},0.8)`] : null });
+    if (n.kind !== "agent" && n.state === "working") labels.push({ z, x: q.sx, y: q.sy + r + 16, font: "500 12.5px 'JetBrains Mono'", col: `rgba(${MINT},0.9)`, text: "WORKING" });
+  };
+
+  // hover: front-facing nodes only
+  hovered = null; let best = 18;
+  for (const { n, q } of P) { if (q.z < -0.05 && n.kind !== "core") continue; const dm = Math.hypot(mouse.x - q.sx, mouse.y - q.sy); if (dm < best + 4 * q.pr) { best = dm; hovered = n; } }
+
+  c.textAlign = "center";
+  const labels = [];
+  const sorted = P.slice().sort((a, b) => a.q.z - b.q.z);
+  // back half
+  drawGrat(false); drawShell(false); drawEdges(false);
+  sorted.filter(({ n, q }) => q.z < 0 && n.kind !== "core").forEach(drawNode);
+  // core and spokes, inside the globe
+  const core = P.find((x) => x.n.kind === "core");
+  if (core) {
+    glow(core.q.sx, core.q.sy, R * 0.55, MINT, 0.10 + 0.08 * E + 0.03 * Math.sin(t * 0.8)); glow(core.q.sx, core.q.sy, R * 0.16, WHITE, 0.2);
+    for (const { n, q } of P) { if (n.kind !== "lead") continue; const lit = hotDept === n.dept;
+      const g = c.createLinearGradient(core.q.sx, core.q.sy, q.sx, q.sy); const col = deptLive[n.dept] || lit ? MINT : WHITE, a = q.z >= 0 ? (lit ? 0.5 : 0.2) : 0.07;
+      g.addColorStop(0, `rgba(${col},${a * 0.3})`); g.addColorStop(1, `rgba(${col},${a})`); c.strokeStyle = g; c.lineWidth = lit ? 1.4 : 1; c.beginPath(); c.moveTo(core.q.sx, core.q.sy); c.lineTo(q.sx, q.sy); c.stroke(); }
+    drawNode(core);
+  }
+  // front half
+  drawGrat(true); drawShell(true);
+  if (hotDept >= 0) { const L = nodes.find((n) => n.kind === "lead" && n.dept === hotDept);   // outline the hovered department's region
+    if (L) { c.strokeStyle = `rgba(${MINT},0.55)`; c.lineWidth = 1.2; c.setLineDash([3, 4]); c.beginPath(); let pen = false;
+      for (let i = 0; i <= 48; i++) { const q = proj(around(L.p, L.cap + 0.08, i / 48 * 6.283)); if (q.z < 0) { pen = false; continue; } pen ? c.lineTo(q.sx, q.sy) : c.moveTo(q.sx, q.sy); pen = true; }
+      c.stroke(); c.setLineDash([]); } }
+  drawEdges(true);
+  sorted.filter(({ n, q }) => q.z >= 0 && n.kind !== "core").forEach(drawNode);
+  // rim
+  c.strokeStyle = `rgba(${WHITE},0.14)`; c.lineWidth = 1; c.beginPath(); c.arc(CX, CY, R * 1.0, 0, 6.28); c.stroke();
+  // labels: front first; one that would overlap a placed label is skipped
+  const placed = [];
+  for (const L of labels.sort((a, b) => b.z - a.z)) {
+    c.font = L.font; const w = c.measureText(L.text).width + 8, bx = { l: L.x - w / 2, r: L.x + w / 2, t: L.y - 12, b: L.y + (L.sub ? 16 : 4) };
+    if (placed.some((p) => bx.l < p.r && bx.r > p.l && bx.t < p.b && bx.b > p.t)) continue;
+    placed.push(bx); c.fillStyle = L.col; c.fillText(L.text, L.x, L.y);
+    if (L.sub) { c.font = "500 12px 'JetBrains Mono'"; c.fillStyle = L.sub[1]; c.fillText(L.sub[0], L.x, L.y + 13); }
+  }
+
+  // tooltip
+  const br = box.getBoundingClientRect();
+  if (hovered && !dragging) { const q = byNode.get(hovered);
+    tip.style.display = "block"; tip.style.left = br.left + q.sx + "px"; tip.style.top = br.top + q.sy + "px";
+    tip.innerHTML = `${esc(hovered.name)}<small>${esc(hovered.deptName ?? "Organization")} · ${esc(hovered.state)} · ${hovered.go && hovered.go !== "#" ? "click to open" : "not reachable"}</small>`; cv.style.cursor = hovered.go && hovered.go !== "#" ? "pointer" : "not-allowed"; }
+  else { tip.style.display = "none"; cv.style.cursor = dragging ? "grabbing" : "grab"; }
+  R = R0;
+  requestAnimationFrame(frame);
+}
+addEventListener("keydown", (e) => { if (e.key === "Escape") orgMenu(false); });
+
+fit(); load(); setInterval(load, 10000);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
