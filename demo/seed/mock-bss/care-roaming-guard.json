@@ -1,0 +1,56 @@
+{
+  "customer": {
+    "subscriber": {
+      "id": "NW-451022",
+      "name": "Sofia Lindqvist",
+      "plan": "Nordwave Flex 20 GB",
+      "language": "sv"
+    },
+    "consent": {
+      "service_messages": true,
+      "marketing": false
+    }
+  },
+  "charging": {
+    "event": {
+      "type": "roaming_started",
+      "country": "Thailand",
+      "zone": "World Zone 3",
+      "rate_per_gb": "45.00",
+      "currency": "EUR"
+    },
+    "usage_so_far": {
+      "data_mb": 120,
+      "charges": "5.40"
+    },
+    "spend_cap": {
+      "limit": "50.00",
+      "set_by": "Nordwave default"
+    }
+  },
+  "catalogue": {
+    "passes": [
+      {
+        "id": "day",
+        "name": "World Zone 3 day pass",
+        "price": "9.00",
+        "data_gb": 1,
+        "valid_hours": 24
+      },
+      {
+        "id": "week",
+        "name": "World Zone 3 week pass",
+        "price": "29.00",
+        "data_gb": 5,
+        "valid_days": 7
+      }
+    ]
+  },
+  "policy": {
+    "policy": {
+      "approver": "Care Lead",
+      "sms_max_chars": 320,
+      "rule": "a service message may explain charges and passes; it must not sell anything else"
+    }
+  }
+}

@@ -1,0 +1,522 @@
+{
+ "industry": "healthcare",
+ "industryLabel": "Healthcare",
+ "operator": "Meridian Health",
+ "standard": "HL7 FHIR",
+ "source": "Concepts from HL7 FHIR R4 resources (HL7, CC0 public domain). Meridian Health is fictional; wording and agents are illustrative, not clinical advice.",
+ "departments": [
+  "Patient Access",
+  "Clinical",
+  "Pharmacy",
+  "Revenue Cycle",
+  "Quality",
+  "Operations",
+  "Executive"
+ ],
+ "layers": "HL7 FHIR",
+ "terms": [
+  {
+   "id": "patient",
+   "kind": "entity",
+   "department": "Patient Access",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Patient"
+   },
+   "nordwave": {
+    "label": "Patient",
+    "synonyms": [
+     "patient",
+     "member",
+     "person receiving care"
+    ],
+    "description": "A person who receives care."
+   },
+   "capabilities": [
+    {
+     "id": "read:patient",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "appointment",
+   "kind": "entity",
+   "department": "Patient Access",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Appointment"
+   },
+   "nordwave": {
+    "label": "Appointment",
+    "synonyms": [
+     "appointment",
+     "booking",
+     "visit slot"
+    ],
+    "description": "A booked time with a practitioner."
+   },
+   "capabilities": [
+    {
+     "id": "read:appointment",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "practitioner",
+   "kind": "entity",
+   "department": "Operations",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Practitioner"
+   },
+   "nordwave": {
+    "label": "Clinician",
+    "synonyms": [
+     "clinician",
+     "doctor",
+     "nurse",
+     "practitioner"
+    ],
+    "description": "A person who delivers care."
+   },
+   "capabilities": [
+    {
+     "id": "read:practitioner",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "encounter",
+   "kind": "entity",
+   "department": "Clinical",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Encounter"
+   },
+   "nordwave": {
+    "label": "Visit",
+    "synonyms": [
+     "visit",
+     "encounter",
+     "admission"
+    ],
+    "description": "An interaction between patient and provider."
+   },
+   "capabilities": [
+    {
+     "id": "read:encounter",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "condition",
+   "kind": "entity",
+   "department": "Clinical",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Condition"
+   },
+   "nordwave": {
+    "label": "Diagnosis",
+    "synonyms": [
+     "diagnosis",
+     "condition",
+     "problem"
+    ],
+    "description": "A clinical condition or problem."
+   },
+   "capabilities": [
+    {
+     "id": "read:condition",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "observation",
+   "kind": "entity",
+   "department": "Clinical",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Observation"
+   },
+   "nordwave": {
+    "label": "Lab result",
+    "synonyms": [
+     "lab result",
+     "observation",
+     "vital sign",
+     "test result"
+    ],
+    "description": "A measurement or finding."
+   },
+   "capabilities": [
+    {
+     "id": "read:observation",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "care-plan",
+   "kind": "entity",
+   "department": "Clinical",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "CarePlan"
+   },
+   "nordwave": {
+    "label": "Care plan",
+    "synonyms": [
+     "care plan",
+     "treatment plan"
+    ],
+    "description": "The planned care for a patient."
+   },
+   "capabilities": [
+    {
+     "id": "read:care-plan",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "medication-request",
+   "kind": "entity",
+   "department": "Pharmacy",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "MedicationRequest"
+   },
+   "nordwave": {
+    "label": "Prescription",
+    "synonyms": [
+     "prescription",
+     "medication order",
+     "script"
+    ],
+    "description": "An order to supply and give a medicine."
+   },
+   "capabilities": [
+    {
+     "id": "read:medication-request",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "claim",
+   "kind": "entity",
+   "department": "Revenue Cycle",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Claim"
+   },
+   "nordwave": {
+    "label": "Claim",
+    "synonyms": [
+     "claim",
+     "insurance claim",
+     "bill to payer"
+    ],
+    "description": "A request to a payer for payment of care."
+   },
+   "capabilities": [
+    {
+     "id": "read:claim",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "coverage",
+   "kind": "entity",
+   "department": "Revenue Cycle",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Coverage"
+   },
+   "nordwave": {
+    "label": "Insurance cover",
+    "synonyms": [
+     "insurance cover",
+     "coverage",
+     "insurance plan",
+     "eligibility"
+    ],
+    "description": "The insurance that pays for care."
+   },
+   "capabilities": [
+    {
+     "id": "read:coverage",
+     "status": "awaiting-api"
+    }
+   ]
+  },
+  {
+   "id": "consent",
+   "kind": "entity",
+   "department": "Quality",
+   "tmf": {
+    "api": "FHIR R4",
+    "concept": "Consent"
+   },
+   "nordwave": {
+    "label": "Consent",
+    "synonyms": [
+     "consent",
+     "patient consent",
+     "data sharing consent"
+    ],
+    "description": "What the patient allows to be done with their data and care."
+   },
+   "capabilities": [
+    {
+     "id": "read:consent",
+     "status": "awaiting-api"
+    }
+   ]
+  }
+ ],
+ "relations": [
+  [
+   "appointment",
+   "precedes",
+   "encounter"
+  ],
+  [
+   "encounter",
+   "produces",
+   "observation"
+  ],
+  [
+   "condition",
+   "triggers",
+   "care-plan"
+  ],
+  [
+   "care-plan",
+   "uses",
+   "medication-request"
+  ],
+  [
+   "claim",
+   "depends-on",
+   "coverage"
+  ],
+  [
+   "claim",
+   "depends-on",
+   "encounter"
+  ],
+  [
+   "encounter",
+   "governed-by",
+   "consent"
+  ]
+ ],
+ "workflows": [
+  {
+   "id": "patient-scheduling",
+   "name": "Patient Access \u00b7 Scheduling",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "patient",
+    "appointment",
+    "practitioner"
+   ]
+  },
+  {
+   "id": "discharge-summary",
+   "name": "Clinical \u00b7 Discharge summary",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "encounter",
+    "condition",
+    "observation",
+    "care-plan"
+   ]
+  },
+  {
+   "id": "prior-authorisation",
+   "name": "Revenue Cycle \u00b7 Prior authorisation",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "coverage",
+    "medication-request",
+    "claim"
+   ]
+  },
+  {
+   "id": "claim-denials",
+   "name": "Revenue Cycle \u00b7 Claim denials",
+   "app": "sim",
+   "status": "planned",
+   "terms": [
+    "claim",
+    "coverage",
+    "encounter"
+   ]
+  }
+ ],
+ "roster": {
+  "company": {
+   "name": "Meridian Health",
+   "description": "Meridian Health AI workforce: patient access, clinical documentation, pharmacy and revenue-cycle agents."
+  },
+  "agents": [
+   {
+    "key": "ops-lead",
+    "name": "Meridian Agent Operations Lead",
+    "title": "Head of AI Operations",
+    "role": "ceo",
+    "department": "Executive",
+    "reportsTo": null,
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "patient"
+    ],
+    "capabilities": "Sets goals for the agent workforce and approves new agents."
+   },
+   {
+    "key": "access-lead",
+    "name": "Patient Access Lead Agent",
+    "title": "Head of Patient Access Agents",
+    "role": "general",
+    "department": "Patient Access",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "patient"
+    ],
+    "capabilities": "Coordinates scheduling and intake agents."
+   },
+   {
+    "key": "scheduler",
+    "name": "Scheduling Agent",
+    "title": "Appointments",
+    "role": "engineer",
+    "department": "Patient Access",
+    "reportsTo": "access-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "appointment",
+     "clinician"
+    ],
+    "capabilities": "Books, moves and confirms appointments."
+   },
+   {
+    "key": "clinical-lead",
+    "name": "Clinical Documentation Lead Agent",
+    "title": "Head of Clinical Agents",
+    "role": "general",
+    "department": "Clinical",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "visit"
+    ],
+    "capabilities": "Coordinates documentation agents; clinicians sign everything."
+   },
+   {
+    "key": "discharge",
+    "name": "Discharge Summary Agent",
+    "title": "Discharge summaries",
+    "role": "engineer",
+    "department": "Clinical",
+    "reportsTo": "clinical-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "visit",
+     "diagnosis",
+     "lab result",
+     "care plan"
+    ],
+    "capabilities": "Drafts the discharge summary for clinician sign-off."
+   },
+   {
+    "key": "pharmacy",
+    "name": "Medication Reconciliation Agent",
+    "title": "Medication reconciliation",
+    "role": "engineer",
+    "department": "Pharmacy",
+    "reportsTo": "clinical-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "prescription"
+    ],
+    "capabilities": "Checks prescriptions against the care plan; pharmacists approve."
+   },
+   {
+    "key": "rcm-lead",
+    "name": "Revenue Cycle Lead Agent",
+    "title": "Head of Revenue Cycle Agents",
+    "role": "general",
+    "department": "Revenue Cycle",
+    "reportsTo": "ops-lead",
+    "status": "live",
+    "kit": "sim",
+    "terms": [
+     "claim"
+    ],
+    "capabilities": "Coordinates claim and authorisation agents."
+   },
+   {
+    "key": "prior-auth",
+    "name": "Prior Authorisation Agent",
+    "title": "Prior authorisation",
+    "role": "engineer",
+    "department": "Revenue Cycle",
+    "reportsTo": "rcm-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "insurance cover",
+     "prescription"
+    ],
+    "capabilities": "Prepares prior-authorisation requests to payers."
+   },
+   {
+    "key": "denials",
+    "name": "Claim Denials Agent",
+    "title": "Claim denials",
+    "role": "engineer",
+    "department": "Revenue Cycle",
+    "reportsTo": "rcm-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "claim"
+    ],
+    "capabilities": "Explains denials and drafts appeals."
+   },
+   {
+    "key": "consent",
+    "name": "Consent and Privacy Agent",
+    "title": "Consent",
+    "role": "engineer",
+    "department": "Quality",
+    "reportsTo": "ops-lead",
+    "status": "configured",
+    "kit": "sim",
+    "terms": [
+     "consent"
+    ],
+    "capabilities": "Checks consent before data is shared."
+   }
+  ]
+ }
+}

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<title>ATLAS Customer Workspace</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23171717'/%3E%3Ccircle cx='32' cy='32' r='13' fill='none' stroke='%2336E0AD' stroke-width='6'/%3E%3C/svg%3E">
+<script>
+// Same theme logic as the ATLAS Agent Organization: stored choice, else the system setting, default dark.
+(function () { var t = null; try { t = localStorage.getItem("theme"); } catch (e) {}
+  var dark = t === "dark" || (t !== "light" && !(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
+  document.documentElement.classList.toggle("dark", dark); document.documentElement.style.colorScheme = dark ? "dark" : "light"; })();
+</script>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+:root {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; --radius: 0.5rem;
+  --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --primary: rgb(0, 35, 75); --ring: rgb(0, 160, 227);
+  --sidebar: #f2f2f2; --sel: rgb(11, 58, 107);
+  --ok: #2FA67A; --bad: #E0648A; --warn: #F0A030; --info: #2E86D6;
+}
+html.dark { --background: oklch(0.205 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.205 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 0.1); --input: oklch(1 0 0 / 0.15); --primary: rgb(0, 160, 227); --sidebar: oklch(0.269 0 0); }
+* { box-sizing: border-box; } html, body { margin: 0; height: 100%; }
+body { font-family: var(--font-sans); font-size: 14px; background: var(--background); color: var(--foreground); }
+.app { display: flex; height: 100vh; }
+.sb { width: 240px; flex: none; background: var(--sidebar); display: flex; flex-direction: column; padding: 12px; gap: 4px; overflow: auto; }
+.sb-head { display: flex; align-items: center; gap: 10px; padding: 6px 8px 14px; } .sb-head svg { width: 26px; height: 26px; flex: none; }
+.sb-head b { font-size: 14px; font-weight: 600; display: block; line-height: 1.2; } .sb-head span { font-size: 11px; color: var(--muted-foreground); }
+.sb-label { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: color-mix(in oklab, var(--muted-foreground) 60%, transparent); padding: 14px 8px 4px; }
+.nav { display: flex; align-items: center; gap: 10px; width: 100%; height: 32px; padding: 6px 8px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; color: inherit; text-decoration: none; background: none; border: 0; cursor: pointer; text-align: left; }
+.nav:hover { background: color-mix(in oklab, currentColor 8%, transparent); } .nav[aria-current] { background: var(--sel); color: #fff; }
+.nav svg { width: 16px; height: 16px; flex: none; } .sb-foot { margin-top: auto; padding-top: 10px; }
+.mainc { flex: 1; min-width: 0; overflow: auto; }
+.topbar { height: 60px; display: flex; align-items: center; gap: 14px; padding: 0 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--background); z-index: 2; }
+.topbar h1 { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: .6px; text-transform: uppercase; }
+.topbar .sub { color: var(--muted-foreground); font-size: 12px; margin-left: auto; }
+.wrap { padding: 18px 24px 40px; max-width: 1180px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.chip { font: inherit; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: inherit; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--sel); color: #fff; border-color: transparent; } .chip:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+select, input[type=number] { font: inherit; font-size: 12px; height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--input); background: transparent; color: inherit; }
+.banner { border: 1px solid color-mix(in oklab, var(--warn) 50%, transparent); background: color-mix(in oklab, var(--warn) 10%, transparent); padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 14px; line-height: 1.5; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--card); }
+.kpi .l { font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted-foreground); } .kpi .v { font-size: 26px; font-weight: 600; margin-top: 6px; } .kpi .n { font-size: 12px; color: var(--muted-foreground); margin-top: 4px; line-height: 1.4; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 14px; } @media (max-width: 980px) { .grid2 { grid-template-columns: 1fr; } .sb { display: none; } }
+h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; letter-spacing: .3px; } h3 { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted-foreground); margin: 14px 0 6px; font-weight: 500; }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 999px; } .pill.go { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); } .pill.nogo { background: color-mix(in oklab, var(--bad) 20%, transparent); color: var(--bad); }
+ul.reasons { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.55; } .muted { color: var(--muted-foreground); font-size: 12px; line-height: 1.5; }
+svg text { font-family: var(--font-sans); fill: var(--muted-foreground); font-size: 10px; }
+.ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; } .btn { font: inherit; font-size: 12px; font-weight: 500; height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--input); background: transparent; color: inherit; cursor: pointer; } .btn.primary { background: var(--sel); color: #fff; border-color: transparent; }
+.counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; } .counters div { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; } .counters b { display: block; font-size: 20px; font-weight: 600; } .counters span { font-size: 11px; color: var(--muted-foreground); }
+.bar { height: 6px; border-radius: 3px; background: var(--muted); overflow: hidden; margin-bottom: 8px; } .bar i { display: block; height: 100%; background: var(--ring); width: 0; }
+.feed { font-size: 12px; line-height: 1.45; min-height: 190px; } .feed .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 6px 0; border-top: 1px solid var(--border); } .feed .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag { align-self: center; font-size: 10.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; } .tag.c { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); } .tag.w { background: color-mix(in oklab, var(--bad) 22%, transparent); color: var(--bad); } .tag.l { background: color-mix(in oklab, var(--warn) 24%, transparent); color: var(--warn); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; } th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--border); } th { font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted-foreground); font-weight: 500; border-top: 0; } td.num { font-variant-numeric: tabular-nums; }
+.empty { border: 1px dashed var(--border); border-radius: var(--radius); padding: 28px; line-height: 1.7; } code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--muted); padding: 1px 6px; border-radius: 5px; }
+input[type=range] { width: 160px; accent-color: var(--ring); }
+
+.seg { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.fld { display:flex; flex-direction:column; gap:4px; font-size:12px; color: var(--muted-foreground); } .fld input[type=number] { width: 150px; }
+.cols { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px; } @media (max-width: 980px) { .cols { grid-template-columns: 1fr; } }
+.verdict { display:inline-block; font-size:12px; font-weight:700; letter-spacing:.8px; padding:4px 12px; border-radius:999px; }
+.verdict.ok { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); } .verdict.no { background: color-mix(in oklab, var(--bad) 22%, transparent); color: var(--bad); }
+.m { display:grid; grid-template-columns: 1fr auto; gap:4px 10px; font-size:13px; margin:10px 0; } .m b { font-weight:600; text-align:right; }
+.chk { font-size:12.5px; display:grid; grid-template-columns: 18px 1fr auto; gap:6px; padding:5px 0; border-top:1px solid var(--border); } .chk .y { color: var(--ok); } .chk .n { color: var(--bad); }
+.num { text-align:right; font-variant-numeric: tabular-nums; }
+.bill td { padding:4px 8px; }
+
+.kv { display:grid; grid-template-columns: 150px 1fr; gap:6px 12px; font-size:13px; } .kv dt { color: var(--muted-foreground); } .kv dd { margin:0; }
+.badge { display:inline-block; font-size:11px; font-weight:600; padding:2px 9px; border-radius:999px; margin-right:6px; background: var(--muted); }
+.badge.bad { background: color-mix(in oklab, var(--bad) 22%, transparent); color: var(--bad); } .badge.warn { background: color-mix(in oklab, var(--warn) 22%, transparent); color: var(--warn); } .badge.good { background: color-mix(in oklab, var(--ok) 22%, transparent); color: var(--ok); }
+.tabs2 { display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--border); margin:14px 0; } .tabs2 a { padding:8px 14px; font-size:13px; font-weight:500; color:inherit; text-decoration:none; border-bottom:2px solid transparent; } .tabs2 a[aria-current] { border-color: var(--ring); color: var(--ring); }
+.bars { display:flex; align-items:flex-end; gap:6px; height:120px; margin-top:8px; } .bars div { flex:1; background: var(--ring); border-radius:4px 4px 0 0; min-height:2px; position:relative; } .bars div span { position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:9px; color: var(--muted-foreground); }
+tr.click { cursor:pointer; } tr.click:hover { background: color-mix(in oklab, currentColor 6%, transparent); }
+.filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; } input[type=search], .filters input { font: inherit; font-size:13px; height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--input); background:transparent; color:inherit; min-width:260px; }
+.pager { display:flex; gap:8px; align-items:center; margin-top:10px; font-size:12px; color: var(--muted-foreground); }
+.inv { max-width:560px; } .inv .tot td { font-weight:700; border-top:2px solid var(--border); }
+a.lnk { color: var(--ring); text-decoration:none; cursor:pointer; } a.lnk:hover { text-decoration:underline; }
+.num { text-align:right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sb">
+    <div class="sb-head">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="13" fill="#171717"/><circle cx="32" cy="32" r="13" fill="none" stroke="#36E0AD" stroke-width="6"/></svg>
+      <div><b>Customer workspace</b><span id="opname">ATLAS AI Labs</span></div>
+    </div>
+    <div class="sb-label">Back office</div>
+    <a class="nav" id="n-dashboard" href="#/dashboard">Dashboard</a>
+    <a class="nav" id="n-customers" href="#/customers">Customers</a>
+    <a class="nav" id="n-catalogue" href="#/catalogue">Catalogue</a>
+    <div id="atlas-platform" data-current="crm"></div>
+    <div class="sb-foot"><button class="nav" id="theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span id="theme-label">Light mode</span></button></div>
+  </aside>
+  <div class="mainc">
+    <div class="topbar"><h1 id="title">Billing back office</h1><span class="sub" id="gen">Synthetic data · read-only except agent actions (sandbox) · as of 2026-10-19</span></div>
+    <div class="wrap" id="root"><p class="muted">Loading…</p></div>
+  </div>
+</div>
+<script type="module">
+const el = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); } for (const c of kids.flat(Infinity)) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(String(c))); return n; };
+const eur = (c) => (c < 0 ? "-" : "") + "EUR " + (Math.abs(c) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num = (x) => Math.round(x).toLocaleString("en-US");
+const api = async (p) => { const r = await fetch(p, { cache: "no-store" }); if (!r.ok) throw new Error(p + " " + r.status); return r.json(); };
+const root = document.getElementById("root"), titleEl = document.getElementById("title");
+const SEG = { prepaid: "Prepaid", postpaid: "Postpaid", business: "Business" };
+const badge = (t, k = "") => el("span", { class: `badge ${k}` }, t);
+const flags = (f) => [f.bill_shock && badge("Bill shock", "bad"), f.overdue && badge("Overdue", "warn"), f.vulnerable && badge("Vulnerable", "warn")];
+const table = (heads, rows, numCols = []) => el("table", {}, el("thead", {}, el("tr", {}, heads.map((h, i) => el("th", { class: numCols.includes(i) ? "num" : "" }, h)))), el("tbody", {}, rows));
+const td = (v, cls = "") => el("td", { class: cls }, v);
+const card = (title, ...kids) => el("div", { class: "card", style: "margin-bottom:12px" }, title ? el("h2", {}, title) : null, ...kids);
+const kv = (pairs) => el("dl", { class: "kv" }, pairs.flatMap(([k, v]) => [el("dt", {}, k), el("dd", {}, v)]));
+const statusBadge = (s) => badge(s, s === "overdue" ? "bad" : s === "paid late" || s === "failed" ? "warn" : s === "paid" || s === "succeeded" || s === "completed" ? "good" : "");
+
+function route() {
+  const h = location.hash.replace(/^#\/?/, ""), [pathPart, qs] = h.split("?"), parts = pathPart.split("/").filter(Boolean);
+  return { parts, q: new URLSearchParams(qs ?? "") };
+}
+function setNav(name) { for (const n of ["dashboard", "customers", "catalogue"]) { const a = document.getElementById("n-" + n); if (n === name) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); } }
+
+async function render() {
+  const { parts, q } = route();
+  root.replaceChildren(el("p", { class: "muted" }, "Loading…"));
+  try {
+    if (parts[0] === "customer" && parts[1]) return await customerPage(parts[1], parts[2] ?? "overview", q);
+    if (parts[0] === "customers") return await customersPage(q);
+    if (parts[0] === "catalogue") return await cataloguePage();
+    return await dashboardPage();
+  } catch (e) { root.replaceChildren(el("div", { class: "empty" }, "Could not load: " + e.message)); }
+}
+
+async function dashboardPage() {
+  setNav("dashboard"); titleEl.textContent = "Dashboard";
+  const d = await api("/twin/api/office/dashboard"), max = Math.max(...d.billed_by_month.map((m) => m.total_cents));
+  const kpi = (l, v, n, href) => el("div", { class: "card kpi" }, el("div", { class: "l" }, l), el("div", { class: "v" }, href ? el("a", { class: "lnk", href }, v) : v), el("div", { class: "n" }, n));
+  root.replaceChildren(
+    el("div", { class: "kpis" },
+      kpi("Customers", num(d.customers), "one mobile line each", "#/customers"), kpi("Monthly recurring revenue", eur(d.mrr_cents), "plan fees"), kpi("Billed in September", eur(d.latest_billed_cents), "including usage and roaming"),
+      kpi("Overdue", num(d.overdue.customers), eur(d.overdue.amount_cents) + " unpaid", "#/customers?flag=overdue"), kpi("Bill-shock cases", num(d.bill_shock_cases), "roaming spike in September", "#/customers?flag=shock"), kpi("Churn-risk customers", num(d.churn_risk_customers), "risk 0.5 or more", "#/customers?flag=risky")),
+    el("div", { class: "grid2" },
+      card("Billed per month", el("div", { class: "bars", style: "margin-bottom:22px" }, d.billed_by_month.map((m) => el("div", { style: `height:${Math.max(2, (m.total_cents / max) * 100)}%`, title: `${m.month}: ${eur(m.total_cents)}` }, el("span", {}, m.month.slice(5))))), el("p", { class: "muted" }, "Hover a bar for the amount. All 10,000 customers, rated in cents.")),
+      card("By segment", table(["Segment", "Customers", "MRR", "Billed Sept"], Object.entries(d.by_segment).map(([k, g]) => el("tr", { class: "click", onclick: () => (location.hash = `#/customers?segment=${k}`) }, td(SEG[k]), td(num(g.customers), "num"), td(eur(g.mrr_cents), "num"), td(eur(g.billed_cents), "num"))), [1, 2, 3]))),
+    card("Five biggest September bills", table(["Customer", "Segment", "Bill"], d.top_bills.map((b) => el("tr", { class: "click", onclick: () => (location.hash = `#/customer/${b.id}/bills`) }, td(`${b.id}  ${b.name}`), td(SEG[b.segment]), td(eur(b.total_cents), "num"))), [2])));
+}
+
+async function customersPage(q) {
+  setNav("customers"); titleEl.textContent = "Customers";
+  const p = { q: q.get("q") ?? "", segment: q.get("segment") ?? "", flag: q.get("flag") ?? "", page: q.get("page") ?? "1" };
+  const r = await api(`/twin/api/office/customers?${new URLSearchParams(p)}`);
+  const go = (patch) => { const n = new URLSearchParams({ ...p, ...patch }); for (const [k, v] of [...n]) if (!v) n.delete(k); location.hash = `#/customers?${n}`; };
+  const search = el("input", { type: "search", placeholder: "Search name, customer id or phone number", value: p.q, onkeydown: (e) => { if (e.key === "Enter") go({ q: e.target.value, page: "1" }); } });
+  const sel = (key, opts) => el("select", { onchange: (e) => go({ [key]: e.target.value, page: "1" }) }, opts.map(([v, l]) => el("option", { value: v, ...(p[key] === v ? { selected: "" } : {}) }, l)));
+  root.replaceChildren(
+    el("div", { class: "filters" }, search, sel("segment", [["", "All segments"], ["prepaid", "Prepaid"], ["postpaid", "Postpaid"], ["business", "Business"]]), sel("flag", [["", "All customers"], ["shock", "Bill shock"], ["overdue", "Overdue"], ["risky", "Churn risk"], ["vulnerable", "Vulnerable"]]), el("button", { class: "btn", onclick: () => go({ q: search.value, page: "1" }) }, "Search"), el("span", { class: "muted" }, `${num(r.total)} customers`)),
+    table(["Customer", "Phone", "Segment", "Plan", "Tenure", "September bill", "Churn risk", "Flags"], r.rows.map((c) => el("tr", { class: "click", onclick: () => (location.hash = `#/customer/${c.id}`) }, td(el("span", {}, el("b", {}, c.id), "  ", c.name)), td(c.msisdn), td(SEG[c.segment]), td(c.plan), td(`${c.tenure_months} mo`), td(eur(c.latest_bill_cents), "num"), td(c.churn_risk.toFixed(2), "num"), td(flags(c.flags)))), [5, 6]),
+    el("div", { class: "pager" }, el("button", { class: "btn", ...(r.page <= 1 ? { disabled: "" } : {}), onclick: () => go({ page: String(r.page - 1) }) }, "Previous"), `Page ${r.page} of ${num(r.pages)}`, el("button", { class: "btn", ...(r.page >= r.pages ? { disabled: "" } : {}), onclick: () => go({ page: String(r.page + 1) }) }, "Next")));
+}
+
+async function cataloguePage() {
+  setNav("catalogue"); titleEl.textContent = "Catalogue";
+  const c = await api("/twin/api/office/catalogue"), groups = {};
+  for (const o of c) (groups[o.category] ??= []).push(o);
+  const names = { plan: "Plans", "roaming-pass": "Roaming passes", "add-on": "Add-ons", "retention-offer": "Retention offers", other: "Devices and services" };
+  root.replaceChildren(el("p", { class: "muted" }, `${c.length} billing price-list items. The same list is served at TM Forum 620 (productOffering). Product offerings, drafts and releases are in the `, el("a", { class: "lnk", href: "/twin/catalogue" }, "Product catalogue"), "."), ...Object.entries(groups).map(([k, list]) => card(`${names[k] ?? k} (${list.length})`, table(["Offer", "Id", "Segment", "Price"], list.map((o) => el("tr", {}, td(o.name), td(o.id), td(o.segment), td(eur(o.price_cents), "num"))), [3]))));
+}
+
+const TABS = [["overview", "Overview"], ["line", "Line and device"], ["usage", "Usage"], ["bills", "Bills"], ["payments", "Payments"], ["credits", "Credits"], ["orders", "Orders"], ["cases", "Cases"]];
+async function customerPage(id, tab, q) {
+  setNav("customers"); titleEl.textContent = "Customer";
+  const c = await api(`/twin/api/office/customer/${encodeURIComponent(id)}`);
+  const head = el("div", { class: "card", style: "margin-bottom:6px" }, el("h2", { style: "font-size:18px" }, c.name, "  ", el("span", { class: "muted" }, c.id)), el("div", {}, badge(SEG[c.segment]), badge(c.subscription.plan), ...flags(c.flags), badge(`Churn risk ${c.flags.churn_risk.toFixed(2)}`, c.flags.churn_risk >= 0.5 ? "warn" : "")));
+  const tabs = el("div", { class: "tabs2" }, TABS.map(([k, l]) => el("a", { href: `#/customer/${id}/${k}`, ...(k === tab ? { "aria-current": "page" } : {}) }, l)));
+  const body = el("div", {});
+  root.replaceChildren(el("p", {}, el("a", { class: "lnk", href: "#/customers" }, "← Customers")), head, tabs, body);
+  if (tab === "overview") body.append(
+    el("div", { class: "grid2" },
+      card("Customer", kv([["Phone", c.contact.phone], ["Email", c.contact.email], ["Address", c.contact.address], ["Language", c.language.toUpperCase()], ["Identity verified", c.flags.identity_verified ? "Yes" : "No"], ["Marketing consent", c.flags.marketing_consent ? "Yes" : "No"], ["Customer for", `${c.tenure_months} months`]])),
+      card("Account", kv([["Account", c.account.id], ["Payment method", c.account.payment_method], ["Bill cycle", `day ${c.account.bill_cycle_day}, due in ${c.account.payment_terms_days} days`], ["Balance due", el("b", {}, eur(c.account.balance_due_cents))], ["Credit class", c.account.credit_class], ["Credits, last 12 months", String(c.account.credits_last_12m)]]))),
+    card("Subscription", kv([["Plan", c.subscription.plan], ["Monthly fee", eur(c.subscription.monthly_fee_cents)], ["Included data", c.subscription.included_data], ["Since", c.subscription.since]])),
+    card("Latest bill", billView(c.bills[11])));
+  else if (tab === "line") body.append(card("Line", kv([["Phone number", c.line.msisdn], ["Status", c.line.status], ["Network", c.line.network], ["SIM (ICCID)", c.line.iccid], ["IMSI", c.line.imsi], ["Device", c.line.device], ["IMEI", c.line.imei]])));
+  else if (tab === "usage") await usageTab(c, body, q.get("month") ?? "2026-09");
+  else if (tab === "bills") billsTab(c, body, q.get("bill"));
+  else if (tab === "payments") body.append(card("Payments", table(["Date", "Payment", "Invoice", "Method", "Amount", "Status"], c.payments.map((p) => el("tr", {}, td(p.date), td(p.id), td(p.invoice_number), td(p.method), td(eur(p.amount_cents), "num"), td([statusBadge(p.status), p.reason ?? ""]))), [4]), el("p", { class: "muted" }, "Same records at TM Forum 676: ", el("a", { class: "lnk", href: `/twin/tmf/676/payment?relatedParty.id=${c.id}`, target: "_blank" }, "open the API response"))));
+  else if (tab === "credits") body.append(card("Credits and adjustments", c.credits.length ? table(["Date", "Credit note", "Kind", "Reason", "Amount", "Approved by", "Refunded to"], c.credits.map((x) => el("tr", {}, td(x.date), td([x.id, x.overlay && badge("agent action", "good")]), td(x.kind), td(x.reason), td(eur(x.amount_cents), "num"), td(x.approved_by), td(x.refunded_to))), [4]) : el("p", { class: "muted" }, "No credits in the last 12 months.")));
+  else if (tab === "orders") body.append(card("Orders", table(["Date", "Order", "Type", "Items", "State"], c.orders.map((o) => el("tr", {}, td(o.date), td(o.id), td(o.type), td(o.items.join(", ")), td(statusBadge(o.state)))))));
+  else if (tab === "cases") body.append(card("Cases", c.cases.length ? table(["Opened", "Case", "Category", "Subject", "Owner", "Status"], c.cases.map((x) => el("tr", {}, td(x.opened), td(x.id), td(x.category), td([x.subject, x.note && el("div", { class: "muted" }, x.note)]), td(x.owner), td(badge(x.status, x.status === "closed" ? "good" : "warn"))))) : el("p", { class: "muted" }, "No cases.")));
+}
+
+function billView(b) {
+  return el("div", { class: "inv" }, el("p", { style: "margin:0 0 8px" }, el("b", {}, b.invoice_number), `  ·  ${b.period}  ·  issued ${b.issued}, due ${b.due}  `, statusBadge(b.status), b.paid_date ? ` paid ${b.paid_date}` : ""),
+    el("table", {}, el("tbody", {}, b.lines.map((l) => el("tr", {}, td(l.item), td(eur(l.cents), "num"))), el("tr", { class: "tot" }, td("Total due"), td(eur(b.total_cents), "num")))));
+}
+function billsTab(c, body, sel) {
+  const open = sel ? c.bills.find((b) => b.id === sel) : null;
+  body.append(table(["Invoice", "Period", "Issued", "Due", "Total", "Status"], [...c.bills].reverse().map((b) => el("tr", { class: "click", onclick: () => (location.hash = `#/customer/${c.id}/bills?bill=${b.id}`) }, td(b.invoice_number), td(b.period), td(b.issued), td(b.due), td(eur(b.total_cents), "num"), td(statusBadge(b.status)))), [4]));
+  if (open) body.append(card(`Invoice ${open.invoice_number}`, billView(open), el("p", { class: "muted" }, "Same bill at TM Forum 678: ", el("a", { class: "lnk", target: "_blank", href: `/twin/tmf/678/customerBill/${open.id}` }, "open the API response"))));
+}
+async function usageTab(c, body, month) {
+  const u = await api(`/twin/api/office/customer/${c.id}/usage?month=${month}`);
+  const months = c.bills.map((b) => b.period);
+  const s = u.summary;
+  body.append(el("div", { class: "filters" }, el("select", { onchange: (e) => (location.hash = `#/customer/${c.id}/usage?month=${e.target.value}`) }, months.slice().reverse().map((m) => el("option", { value: m, ...(m === month ? { selected: "" } : {}) }, m))), el("span", { class: "muted" }, `${num(s.data_mb)} MB data · ${num(s.roaming_mb)} MB roaming · ${s.premium_sms} premium SMS · ${s.calls} calls · charged usage ${eur(s.charged_cents)}`)),
+    card(null, table(["Time", "Type", "Network", "Detail", "Volume", "Charge"], u.rows.map((r) => el("tr", {}, td(r.time), td(r.type), td(r.network), td(r.detail), td(r.volume_mb ? `${num(r.volume_mb)} MB` : "", "num"), td(r.charge_cents ? eur(r.charge_cents) : "", "num"))), [4, 5]), el("p", { class: "muted" }, "Records are generated so they add up to the monthly usage and to the roaming line on the bill.")));
+}
+
+const t = document.getElementById("theme"), tl = document.getElementById("theme-label");
+const sync = () => { tl.textContent = document.documentElement.classList.contains("dark") ? "Light mode" : "Dark mode"; }; sync();
+t.addEventListener("click", () => { const d = !document.documentElement.classList.contains("dark"); document.documentElement.classList.toggle("dark", d); document.documentElement.style.colorScheme = d ? "dark" : "light"; try { localStorage.setItem("theme", d ? "dark" : "light"); } catch {} sync(); });
+try { const o = await api("/data/ontology.json"); document.getElementById("opname").textContent = o.operator ?? "ATLAS AI Labs"; } catch {}
+window.addEventListener("hashchange", render);
+render();
+</script>
+<script src="/shared/platform-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATLAS · Agent roster</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#171717;color:#fafafa}body{margin:0;padding:36px;max-width:1400px;margin:auto}a{color:#36e0ad;text-decoration:none}header{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid #444;padding-bottom:24px}h1{letter-spacing:5px;margin:0}p{color:#bdbdbd;line-height:1.6}input{background:#262626;border:1px solid #555;color:white;padding:12px;font:inherit;width:min(90%,420px);margin:16px 0}#roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}article{background:#202020;border:1px solid #3b3b3b;border-radius:10px;padding:22px}article:target{border-color:#36e0ad}h2{font-size:19px}small{color:#36e0ad;text-transform:uppercase;letter-spacing:1px}nav{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.pill{font-size:12px;letter-spacing:2px;border:1px solid #36e0ad;padding:8px;color:#36e0ad}
+@media (min-width:901px) and (max-height:800px){body{overflow-y:auto}.stage{min-height:800px}}
+</style></head><body><header><div><h1>ATLAS</h1><p>HIVE · Agent roster</p></div><nav><a href="/hive">HIVE</a><a href="/twin">Proving Ground</a><a href="/twin/live#sandbox">Sandbox</a><span class="pill">SYNTHETIC DEMO</span></nav></header>
+<h2>A workforce you can inspect</h2><p>These are illustrative roles, not running AI workers. The local twin and its sandbox run without builders, model keys or Docker.</p>
+<label>Find a role<br><input id="search" placeholder="Search name, department or capability"></label><main id="roster"></main>
+<script type="module">
+const data=await (await fetch('/data/roster.json')).json(), root=document.getElementById('roster'), search=document.getElementById('search');
+function draw(){root.replaceChildren();for(const a of data.agents.filter(a=>[a.name,a.department,a.capabilities].join(' ').toLowerCase().includes(search.value.toLowerCase()))){const card=document.createElement('article');card.id=a.key;for(const [tag,text] of [['small',a.department],['h2',a.name],['p',a.capabilities]]){const el=document.createElement(tag);el.textContent=text;card.append(el)}root.append(card)}}search.addEventListener('input',draw);draw();
+</script></body></html>

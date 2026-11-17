@@ -1,0 +1,58 @@
+{
+  "customer": {
+    "subscriber": {
+      "id": "NW-562190",
+      "name": "Joonas Heikkinen",
+      "language": "fi",
+      "tenure_months": 33
+    },
+    "consent": {
+      "marketing": true
+    },
+    "eligibility": {
+      "can_switch": true,
+      "note": "switch down allowed, no fee, effective next bill cycle"
+    }
+  },
+  "usage": {
+    "current_plan": "FLEX-50",
+    "usage_gb_last_6_months": [
+      8.2,
+      9.1,
+      7.6,
+      8.8,
+      9.4,
+      8
+    ]
+  },
+  "catalogue": {
+    "plans": [
+      {
+        "id": "FLEX-10",
+        "name": "Nordwave Flex 10 GB",
+        "data_gb": 10,
+        "price": "24.90"
+      },
+      {
+        "id": "FLEX-20",
+        "name": "Nordwave Flex 20 GB",
+        "data_gb": 20,
+        "price": "29.90"
+      },
+      {
+        "id": "FLEX-50",
+        "name": "Nordwave Flex 50 GB",
+        "data_gb": 50,
+        "price": "39.90"
+      }
+    ]
+  },
+  "policy": {
+    "policy": {
+      "approver": "Marketing Lead",
+      "headroom_percent": 20,
+      "max_arpu_reduction": "8.00",
+      "rule": "a plan change that lowers monthly revenue by more than the limit needs Marketing Lead approval"
+    }
+  }
+}

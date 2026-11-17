@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATLAS HIVE · Co-operating System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* Paperclip dark tokens (vendor/paperclip/ui/src/index.css .dark), in hex.
+   Mint only on things in motion: the sphere while it turns, and the I/O bars while agents stream. */
+:root{
+  --bg:#171717; --deep:#0E0E0E; --raised:#262626; --raised-2:#333333;
+  --fg:#FAFAFA; --primary:#E5E5E5; --muted:#A1A1A1; --dim:#737373; --faint:#525252;
+  --border:rgba(255,255,255,0.10); --border-2:rgba(255,255,255,0.15);
+  --coral:#FF7E46;   /* only for "a person is needed" */
+  --mint:#36E0AD;
+  --rail-l:272px; --rail-r:292px; --gut:30px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:radial-gradient(ellipse 55% 55% at 50% 45%, #202020 0%, #171717 45%, #0E0E0E 100%) fixed, var(--bg);
+  color:var(--fg);font-family:'Rajdhani',sans-serif;overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--fg);text-transform:uppercase;}
+.eyebrow .muted{color:var(--dim);}
+.hairline{height:1px;background:linear-gradient(90deg,var(--border-2),transparent);flex:1;}
+.rh{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.rh .eyebrow{white-space:nowrap;}
+.block{margin-top:18px;}
+.empty{font-size:13px;color:var(--dim);}
+.when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dim);white-space:nowrap;margin-left:auto;padding-left:8px;}
+
+.stage{position:relative;height:100vh;min-height:760px;}
+.floor{position:fixed;left:0;right:0;bottom:0;height:34%;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(90deg,transparent 0 78px,rgba(255,255,255,0.035) 78px 79px),repeating-linear-gradient(0deg,transparent 0 60px,rgba(255,255,255,0.03) 60px 61px);
+  transform:perspective(420px) rotateX(62deg);transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,black,transparent 88%);mask-image:linear-gradient(to top,black,transparent 88%);}
+.sphere-box{position:absolute;inset:0;z-index:1;}
+.sphere-box canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;}
+.vp{position:fixed;width:24px;height:24px;border-color:var(--border-2);z-index:6;pointer-events:none;}
+.vp.tl{top:12px;left:12px;border-top:1px solid;border-left:1px solid;}
+.vp.tr{top:12px;right:12px;border-top:1px solid;border-right:1px solid;}
+.vp.bl{bottom:12px;left:12px;border-bottom:1px solid;border-left:1px solid;}
+.vp.br{bottom:12px;right:12px;border-bottom:1px solid;border-right:1px solid;}
+
+/* ── top bar + KPI strip ── */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:24px var(--gut) 0;pointer-events:none;}
+.topbar > *{pointer-events:auto;}
+.wm{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:36px;letter-spacing:13px;line-height:1;}
+.wm-sub{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:4px;color:var(--muted);margin-top:8px;}
+.wm-tag{font-size:14px;color:var(--dim);margin-top:2px;}
+.kpis{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;background:rgba(23,23,23,0.72);margin-top:4px;}
+.kpi{padding:9px 18px;border-left:1px solid var(--border);min-width:108px;}
+.kpi:first-child{border-left:none;}
+.kpi .k{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.8px;color:var(--dim);text-transform:uppercase;white-space:nowrap;}
+.kpi .v{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:22px;line-height:1.1;margin-top:2px;white-space:nowrap;}
+.kpi .v small{font-size:12px;color:var(--dim);font-weight:400;margin-left:2px;}
+.kpi.human .v{color:var(--coral);}
+a.kpi:hover{background:var(--raised);}
+.clock{text-align:right;}
+.clock .time{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:30px;letter-spacing:3px;line-height:1;}
+.clock .time small{font-size:14px;color:var(--muted);}
+.clock .date{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:3px;color:var(--dim);margin-top:5px;}
+.mode{display:inline-block;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 8px;border:1px solid var(--border-2);border-radius:4px;color:var(--fg);}
+.mode.warn{border-color:rgba(255,126,70,0.45);color:var(--coral);}
+.signal{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.8px;color:var(--dim);margin-top:7px;text-transform:uppercase;}
+.spin-track{width:110px;height:2px;background:var(--raised);margin:4px 0 0 auto;border-radius:2px;overflow:hidden;}
+.spin-fill{height:100%;width:0;background:var(--mint);}
+
+/* ── rails ── */
+.rail{position:absolute;top:126px;bottom:62px;z-index:5;overflow:hidden;}
+.rail.l{left:var(--gut);width:var(--rail-l);}
+.rail.r{right:var(--gut);width:var(--rail-r);display:flex;flex-direction:column;}
+
+.vitals{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vital{display:block;border:1px solid var(--border);border-radius:7px;padding:8px 10px;background:rgba(23,23,23,0.6);transition:background .15s,border-color .15s;}
+.vital:hover{background:var(--raised);border-color:var(--border-2);}
+.vital .lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.6px;color:var(--muted);text-transform:uppercase;}
+.vital .num{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:24px;line-height:1.1;margin-top:2px;}
+.vital .num sub{font-size:11px;color:var(--dim);font-weight:400;}
+.vital .dl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);}
+.vital svg{width:100%;height:16px;margin-top:3px;display:block;overflow:visible;}
+.meter{height:2px;background:var(--raised);border-radius:2px;margin-top:6px;overflow:hidden;display:flex;}
+.meter i{display:block;height:100%;}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);text-transform:uppercase;}
+.chip b{color:var(--fg);font-weight:500;}
+.agent{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13.5px;color:var(--muted);}
+.agent .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.st{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid var(--border);color:var(--dim);flex-shrink:0;width:64px;text-align:center;}
+.st.working{color:var(--bg);background:var(--primary);border-color:var(--primary);}
+.st.review{color:var(--fg);border-color:var(--border-2);}
+.st.blocked{color:var(--coral);border-color:rgba(255,126,70,0.45);}
+
+.dir{display:flex;gap:9px;padding:5px 6px;margin:0 -6px;border-radius:6px;font-size:13.5px;line-height:1.3;color:var(--muted);transition:background .14s;}
+.dir:hover{background:var(--raised);color:var(--fg);}
+.dir .box{width:11px;height:11px;border:1px solid var(--border-2);flex-shrink:0;margin-top:3px;}
+.dir .id{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dim);letter-spacing:1px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dir.blocked .box{border-color:rgba(255,126,70,0.6);}
+.aud{display:flex;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);margin-bottom:6px;line-height:1.35;}
+.aud span:first-child{color:var(--muted);}
+.aud.human span:first-child{color:var(--coral);}
+
+.deck{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;}
+.cmd{display:flex;align-items:center;gap:7px;padding:4px 6px;border:1px solid transparent;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;transition:all .14s;}
+.cmd::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.cmd:hover,.cmd:focus-visible{color:var(--fg);border-color:var(--border);background:var(--raised);outline:none;}
+.cmd .k{margin-left:auto;font-size:8.5px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:0 4px;}
+.cmd.off{opacity:.35;pointer-events:none;}
+.cmd.off .k{display:none;}
+
+.eq{display:flex;gap:2px;height:30px;align-items:flex-end;}
+.eq i{flex:1;border-radius:1px;background:var(--faint);height:10%;transition:background .4s;}
+.eq.on i{background:linear-gradient(to top,rgba(54,224,173,0.35),var(--mint));}
+.run{margin-top:9px;font-size:13px;color:var(--muted);line-height:1.35;}
+.run b{color:var(--fg);font-weight:600;}
+.run .m{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dim);letter-spacing:.5px;}
+.tok{display:flex;height:3px;border-radius:2px;overflow:hidden;background:var(--raised);margin-top:6px;}
+.tok i{display:block;height:100%;}
+.call{display:flex;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:5px;white-space:nowrap;overflow:hidden;}
+.call .a{color:var(--muted);overflow:hidden;text-overflow:ellipsis;max-width:46%;}
+.call .t{color:var(--fg);overflow:hidden;text-overflow:ellipsis;}
+.wire{flex:1 1 auto;min-height:0;overflow:hidden;}
+.wi{display:flex;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.3;color:var(--muted);}
+.wi .c{color:var(--fg);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:2px;}
+.wi.human .c{color:var(--coral);}
+.wi .tx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.dir .ttl{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dir > span:last-child{min-width:0;}
+.wi .tk{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);display:block;}
+
+/* ── callout boxes on the sphere ── */
+.callouts{position:absolute;inset:0;z-index:4;pointer-events:none;}
+.co{position:absolute;width:var(--co-w,148px);pointer-events:auto;display:block;transition:transform .18s;}
+.co .cb{position:relative;background:linear-gradient(135deg,rgba(32,32,32,0.94),rgba(18,18,18,0.92));border:1px solid var(--border-2);padding:9px 11px;}
+.co .cb::before,.co .cb::after{content:'';position:absolute;width:8px;height:8px;border-color:var(--muted);}
+.co .cb::before{top:-1px;left:-1px;border-top:1.5px solid;border-left:1.5px solid;}
+.co .cb::after{bottom:-1px;right:-1px;border-bottom:1.5px solid;border-right:1.5px solid;}
+.co .ct{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.8px;color:var(--fg);text-transform:uppercase;}
+.co .ct i{width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0;}
+.co.down .ct i{background:var(--coral);}
+.co .cm{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dim);margin-top:4px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.co .cm b{color:var(--muted);font-weight:500;}
+.co:hover,.co.hot{transform:translateY(-2px);}
+.co:hover .cb,.co.hot .cb{border-color:rgba(255,255,255,0.4);box-shadow:0 0 22px rgba(255,255,255,0.06);}
+.co:hover .cb::before,.co:hover .cb::after,.co.hot .cb::before,.co.hot .cb::after{border-color:var(--fg);}
+
+/* ── hero ── */
+.hero{position:absolute;left:50%;bottom:66px;transform:translateX(-50%);z-index:5;text-align:center;width:min(560px,46vw);}
+.hero > a{display:block;}
+.hero .hl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--muted);}
+.hero .hl b{color:var(--coral);font-weight:500;}
+.hero .hn{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:72px;line-height:.95;margin-top:4px;}
+.hero > a:hover .hn{text-shadow:0 0 24px rgba(255,255,255,0.25);}
+.hero .hn .unit{font-size:19px;color:var(--muted);letter-spacing:5px;margin-left:10px;}
+.hero .bar{height:1px;background:var(--border);margin:10px auto 0;position:relative;}
+.hero .bar::before{content:'';position:absolute;left:0;top:0;height:100%;width:var(--fill,50%);background:linear-gradient(90deg,var(--coral),transparent);transition:width .6s;}
+.hero .next{display:flex;gap:8px;justify-content:center;align-items:baseline;margin-top:9px;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;}
+.hero .next .p{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--coral);flex-shrink:0;}
+.hero .next span:last-child{overflow:hidden;text-overflow:ellipsis;}
+.hero .next:hover{color:var(--fg);}
+
+/* ── bottom strip ── */
+.bottom{position:absolute;left:var(--gut);right:var(--gut);bottom:20px;z-index:5;display:flex;align-items:center;gap:18px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+.pipe{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap;}
+.pipe a{display:flex;gap:6px;align-items:baseline;padding:3px 8px;border:1px solid var(--border);border-radius:5px;color:var(--muted);transition:background .14s;}
+.pipe a:hover{background:var(--raised);color:var(--fg);}
+.pipe a b{font-family:'Chakra Petch',sans-serif;font-size:14px;color:var(--fg);font-weight:600;letter-spacing:0;}
+.pipe a.hot{border-color:rgba(255,126,70,0.45);}
+.pipe a.hot b{color:var(--coral);}
+.pipe .ar{color:var(--faint);}
+.hint{margin-left:auto;white-space:nowrap;}
+.hint kbd{font-family:inherit;border:1px solid var(--border);border-radius:3px;padding:0 4px;color:var(--muted);}
+.health{display:flex;gap:5px;}
+.pill{font-size:8.5px;letter-spacing:1.2px;padding:3px 7px;border:1px solid var(--border);border-radius:999px;color:var(--muted);display:flex;align-items:center;gap:5px;background:rgba(23,23,23,0.7);}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--primary);}
+.pill.down{color:var(--fg);border-color:rgba(255,126,70,0.45);}
+.pill.down::before{background:var(--coral);}
+
+#tip{position:fixed;z-index:8;pointer-events:none;display:none;transform:translate(-50%,-150%);
+  background:rgba(23,23,23,0.96);border:1px solid var(--border-2);border-radius:6px;padding:7px 11px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1px;white-space:nowrap;}
+#tip small{display:block;color:var(--dim);font-size:9px;margin-top:2px;}
+
+/* ── command palette ── */
+#pal{position:fixed;inset:0;z-index:20;background:rgba(10,10,10,0.6);display:none;align-items:flex-start;justify-content:center;padding-top:14vh;}
+#pal.open{display:flex;}
+.cmdk{width:min(600px,calc(100vw - 32px));border:1px solid var(--border-2);border-radius:10px;overflow:hidden;background:var(--bg);box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+.cmdk .in{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:14px;}
+.cmdk .in .p{color:var(--dim);}
+.cmdk input{flex:1;background:transparent;border:none;outline:none;color:var(--fg);font:inherit;}
+.cmdk kbd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);border:1px solid var(--border);border-radius:3px;padding:1px 6px;}
+.cmdk .rows{max-height:50vh;overflow:auto;}
+.cmdk .row{display:flex;justify-content:space-between;gap:16px;padding:10px 16px;font-size:15px;color:var(--muted);cursor:pointer;}
+.cmdk .row.on{background:var(--raised);color:var(--fg);}
+.cmdk .row span:last-child{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.cmdk .row.human span:last-child{color:var(--coral);}
+
+/* medium screens: narrower rails */
+@media (max-width:1360px){ :root{--rail-l:248px;--rail-r:262px;--gut:24px;} .kpi{padding:8px 12px;min-width:92px;} .kpi .v{font-size:19px;}
+  .hint{display:none;} .health{margin-left:auto;} .pipe a{padding:2px 6px;} .bottom{gap:12px;} }
+@media (max-height:820px) and (min-width:1101px){ .block.audit{display:none;} }
+
+/* narrow screens: one column, page scrolls */
+@media (max-width:1100px){
+  body{overflow:auto;}
+  .stage{height:auto;min-height:0;display:flex;flex-direction:column;padding:0 16px 40px;}
+  .topbar{position:relative;padding:22px 0 0;flex-wrap:wrap;order:1;}
+  .clock{text-align:left;}
+  .spin-track{margin-left:0;}
+  .kpis{order:3;width:100%;flex-wrap:wrap;}
+  .kpi{flex:1 1 30%;border-left:none;border-top:1px solid var(--border);}
+  .sphere-box{position:relative;inset:auto;height:380px;margin-top:8px;order:2;}
+  .callouts{position:relative;inset:auto;order:3;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .co{position:relative;width:auto;left:auto!important;top:auto!important;}
+  .hero{position:relative;left:auto;bottom:auto;transform:none;order:4;width:auto;margin-top:26px;}
+  .rail{position:relative;top:auto;bottom:auto;left:auto!important;right:auto!important;width:auto!important;overflow:visible;margin-top:30px;}
+  .rail.r{order:5;} .rail.l{order:6;}
+  .bottom{position:relative;left:auto;right:auto;bottom:auto;order:7;flex-wrap:wrap;margin-top:28px;}
+  .pipe,.health{flex-wrap:wrap;white-space:normal;}
+  .health{margin-left:0;}
+  .floor{display:none;}
+  .hint{display:none;}
+  .vp{display:none;}
+}
+@media (max-width:520px){
+  .wm{font-size:28px;letter-spacing:9px;}
+  .clock .time{font-size:24px;}
+  .hero .hn{font-size:58px;}
+  .sphere-box{height:320px;}
+  .callouts{grid-template-columns:1fr;}
+}
+@media (min-width:901px) and (max-height:800px){body{overflow-y:auto}.stage{min-height:800px}}
+</style>
+</head>
+<body>
+<div class="floor"></div>
+<div class="vp tl"></div><div class="vp tr"></div><div class="vp bl"></div><div class="vp br"></div>
+
+<main class="stage">
+  <div class="sphere-box" id="box"><canvas id="sphere" aria-label="Sphere of the platform's subsystems; click a node to open it"></canvas></div>
+
+  <header class="topbar">
+    <div>
+      <div class="wm">ATLAS</div>
+      <div class="wm-sub">HIVE · PROVING GROUND</div>
+      <div class="wm-tag">where agents and humans work as one</div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="clock">
+      <div class="time" id="clock">--:--<small>:--</small></div>
+      <div class="date" id="date">—</div>
+      <div class="mode" id="mode">● CONNECTING</div>
+      <div class="signal">Signal · <span id="spinVal">0%</span><div class="spin-track"><div class="spin-fill" id="spinFill"></div></div></div>
+    </div>
+  </header>
+
+  <div class="callouts" id="callouts"></div>
+
+  <section class="hero">
+    <a id="heroLink" href="#">
+      <div class="hl">DECISIONS <b>AWAITING A HUMAN</b></div>
+      <div class="hn"><span id="heroNum">–</span><span class="unit">OPEN</span></div>
+    </a>
+    <div class="bar" id="heroBar"></div>
+    <a class="next" id="heroNext" href="#"></a>
+  </section>
+
+  <aside class="rail r">
+    <div class="rh"><span class="eyebrow">COMMAND DECK <span class="muted">1–9 · ⌘K</span></span><span class="hairline"></span></div>
+    <nav class="deck" id="deck"></nav>
+    <div class="block">
+      <div class="rh"><span class="eyebrow">AGENT I/O <span class="muted" id="ioState">IDLE</span></span><span class="hairline"></span></div>
+      <div class="eq" id="eq"></div>
+      <div id="io"></div>
+    </div>
+    <div class="block wire">
+      <div class="rh"><span class="eyebrow">AGENT WIRE <span class="muted">LIVE.INTEL</span></span><span class="hairline"></span></div>
+      <div id="wire"><div class="empty">Loading…</div></div>
+    </div>
+  </aside>
+
+  <aside class="rail l">
+    <div class="rh"><span class="eyebrow">VITALS <span class="muted" id="orgName">ORG.LINK</span></span><span class="hairline"></span></div>
+    <div class="vitals" id="vitals"></div>
+    <div class="block">
+      <div class="rh"><span class="eyebrow">AGENT ROSTER <span class="muted">STATUS</span></span><span class="hairline"></span></div>
+      <div id="roster"></div>
+    </div>
+    <div class="block">
+      <div class="rh"><span class="eyebrow">DIRECTIVES <span class="muted">TOP.3</span></span><span class="hairline"></span></div>
+      <div id="directives"></div>
+    </div>
+    <div class="block audit">
+      <div class="rh"><span class="eyebrow">AUDIT TRAIL <span class="muted">GOVERNANCE</span></span><span class="hairline"></span></div>
+      <div id="audit"></div>
+    </div>
+  </aside>
+
+  <footer class="bottom">
+    <span>Pipeline</span>
+    <div class="pipe" id="pipe"></div>
+    <span class="hint"><kbd>⌘K</kbd> search · <kbd>1</kbd>–<kbd>9</kbd> jump · drag to spin</span>
+    <div class="health" id="health"></div>
+  </footer>
+</main>
+
+<div id="tip"></div>
+<div id="pal" role="dialog" aria-label="Search">
+  <div class="cmdk">
+    <div class="in"><span class="p">hive&gt;</span><input id="palIn" placeholder="Jump to a page, a task or a decision" autocomplete="off"><kbd>ESC</kbd></div>
+    <div class="rows" id="palRows"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════ HELPERS ══════════ */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (n) => Number(n ?? 0).toLocaleString("en-GB");
+const usd = (v) => "$" + Number(v ?? 0).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const short = (n) => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1) + "K" : String(n ?? 0));
+function ago(iso) {
+  if (!iso) return "—";
+  const s = (Date.now() - Date.parse(iso)) / 1000;
+  return s < 60 ? "now" : s < 3600 ? Math.floor(s / 60) + "m" : s < 86400 ? Math.floor(s / 3600) + "h" : Math.floor(s / 86400) + "d";
+}
+const KIT = { sim: "Agent Builder 1", langflow: "Agent Builder 2", claude_code: "Claude Code", codex: "Codex" };
+// Command deck labels that fit two columns; the full name is the tooltip.
+const SHORT = { org: "Org", office: "Back office", decisions: "Decisions", catalogue: "Catalogue", apis: "API desk", twin: "BSS twin", crm: "A-CRM twin", ontology: "Telco onto" };
+const HOTKEYS = ["org", "builder", "langflow", "live", "catalogue", "office", "decisions", "ontology", "approvals"];
+let state = null, lastPulse = null, ioLevel = 0.06;
+
+/* ══════════ CALLOUTS (the boxes on the sphere) ══════════
+   node: which sphere node the leader line runs to. side: left or right column. */
+const CALLOUTS = [
+  { key: "org", node: 0, side: "l", title: "Organization", stat: (d) => d.org.down ? "offline" : `<b>${fmt(d.org.agents.active)}</b> active · ${fmt(d.org.agents.total)} seats`, href: (d) => d.links.org && `/organization`, ok: (d) => !!d.links.org },
+  { key: "builders", node: 1, side: "l", title: "Builders", stat: (d) => d.kits.filter((k) => k.kit === "sim" || k.kit === "langflow").map((k) => `${KIT[k.kit]} <b>${k.count}</b>`).join(" · "), href: (d) => d.links.sim, ok: (d) => !!d.links.sim },
+  { key: "decisions", node: 3, side: "l", title: "Decisions", stat: (d) => `<b>${fmt(d.counts.engines ?? 0)}</b> engines compared`, href: () => "/decisions", ok: () => true },
+  { key: "twin", node: 2, side: "r", title: "Twin Live", stat: (d) => `<b>${d.calls.perMin}</b> calls/min · ${short(d.twin.customers)} subs`, href: () => "/twin/live", ok: () => true },
+  { key: "catalogue", node: 5, side: "r", title: "Catalogue", stat: (d) => `<b>${fmt(d.twin.offers)}</b> offers · ${fmt(d.twin.drafts)} drafts`, href: () => "/twin/catalogue", ok: () => true },
+  { key: "ontology", node: 4, side: "r", title: "Ontology", stat: (d) => `<b>${fmt(d.counts.industries ?? 1)}</b> industries`, href: () => "/", ok: () => true },
+];
+$("callouts").innerHTML = CALLOUTS.map((c) => `<a class="co" id="co-${c.key}" href="#"><div class="cb"><div class="ct"><span>${c.title}</span><i></i></div><div class="cm">—</div></div></a>`).join("");
+CALLOUTS.forEach((c) => {
+  const el = $("co-" + c.key);
+  el.addEventListener("mouseenter", () => (hotNode = c.node));
+  el.addEventListener("mouseleave", () => (hotNode = -1));
+});
+
+/* ══════════ RENDER ══════════ */
+const meter = (parts) => `<div class="meter">${parts.map(([v, col]) => `<i style="width:${Math.max(0, Math.min(100, v))}%;background:${col}"></i>`).join("")}</div>`;
+function spark(runs) {
+  if (!runs?.length) return "";
+  const max = Math.max(1, ...runs.map((r) => r.total)), step = 120 / Math.max(1, runs.length - 1);
+  return `<svg viewBox="0 0 120 16" preserveAspectRatio="none"><polyline fill="none" stroke="#A1A1A1" stroke-width="1.2" points="${runs.map((r, i) => `${(i * step).toFixed(1)},${(15 - (r.total / max) * 13).toFixed(1)}`).join(" ")}"/></svg>`;
+}
+const vital = (href, label, num, extra) => `<a class="vital" href="${esc(href ?? "#")}"><div class="lbl">${label}</div><div class="num">${num}</div>${extra}</a>`;
+
+function render(d) {
+  state = d;
+  const o = d.org, down = !!o.down, org = d.links.org;
+  const live = (href) => (org ? href : "#");
+
+  // mode, health, KPI
+  $("mode").textContent = { live: "● LIVE", partial: "● PARTIAL", snapshot: "◌ SNAPSHOT", offline: "○ OFFLINE" }[d.mode];
+  $("mode").className = "mode" + (d.mode === "live" ? "" : " warn");
+  $("health").innerHTML = d.services.map((s) => `<span class="pill${s.ok ? "" : " down"}" title="${s.ok ? "Up" : "Not answering"}">${esc(s.label)}</span>`).join("");
+  $("orgName").textContent = down ? "ORG OFFLINE" : o.stale ? "SNAPSHOT " + new Date(o.savedAt).toLocaleTimeString("en-GB") : (o.company ?? "ORG").toUpperCase();
+  const k = o.kpi ?? {};
+  $("kpis").innerHTML = down ? `<div class="kpi"><div class="k">Organization</div><div class="v">offline</div></div>` : [
+    ["Runs today", fmt(k.runsToday), live(`/organization`)],
+    ["Success · 14d", k.success14 == null ? "—" : `${k.success14}<small>%</small>`, live(`/organization`)],
+    ["Tokens · 7d", short(k.tokens7d), live(`/organization`)],
+    ["Cost · 7d", usd(k.cost7d), live(`/organization`)],
+    ["Open decisions", fmt(k.decisions), live(`/twin/live#sandbox`), "human"],
+  ].map(([label, v, href, cls]) => `<a class="kpi ${cls ?? ""}" href="${esc(href)}"><div class="k">${label}</div><div class="v">${v}</div></a>`).join("");
+
+  // left rail
+  const tasksOpen = o.pipeline ? o.pipeline.queued + o.pipeline.inProgress + o.pipeline.review + o.pipeline.blocked : 0;
+  $("vitals").innerHTML = (down ? "" : [
+    vital(live(`/organization`), "Agents active", `${fmt(o.agents.active)}<sub> / ${fmt(o.agents.total)}</sub>`,
+      meter([[o.agents.running / Math.max(1, o.agents.total) * 100, "#FAFAFA"], [(o.agents.active - o.agents.running) / Math.max(1, o.agents.total) * 100, "#737373"]])),
+    vital(live(`/twin/live#sandbox`), "Tasks open", fmt(tasksOpen), `<div class="dl">${fmt(o.pipeline?.blocked ?? 0)} blocked · ${fmt(o.pipeline?.review ?? 0)} review</div>`),
+    vital(live(`/organization`), "Runs · 14 days", fmt(o.runs.reduce((a, r) => a + r.total, 0)), spark(o.runs)),
+  ].join("")) + vital("/twin/live", "Twin subscribers", short(d.twin.customers), `<div class="dl">${fmt(d.twin.offers)} offers · ${fmt(d.twin.drafts)} drafts</div>`);
+
+  const counts = o.roster?.counts ?? {};
+  $("roster").innerHTML = down ? `<div class="empty">Unknown while the organization is offline.</div>` :
+    `<div class="chips">${["working", "review", "blocked", "idle", "paused"].map((s) => `<span class="chip"><b>${fmt(counts[s] ?? 0)}</b> ${s}</span>`).join("")}</div>` +
+    (o.roster.agents.slice(0, 5).map((a) => `<div class="agent"><span class="st ${a.state}">${a.state}</span><span class="nm">${esc(a.name)}</span><span class="when">${ago(a.lastSeen)}</span></div>`).join("") || `<div class="empty">No active agents.</div>`);
+  $("directives").innerHTML = down ? "" : (o.directives.map((x) =>
+    `<a class="dir ${x.status}" href="${esc(live(x.href))}"><span class="box"></span><span><span class="id">${esc(x.id)} · ${esc(x.status.replace(/_/g, " "))}${x.agent ? " · " + esc(x.agent) : ""}</span><span class="ttl">${esc(x.title)}</span></span></a>`).join("") || `<div class="empty">No open tasks.</div>`);
+  $("audit").innerHTML = down ? "" : (o.audit.slice(0, 3).map((x) => `<div class="aud${x.human ? " human" : ""}"><span>${esc(x.text)}</span><span class="when">${ago(x.at)}</span></div>`).join("") || `<div class="empty">Nothing recorded yet.</div>`);
+
+  // right rail: command deck
+  const keyOf = {}; HOTKEYS.forEach((key, i) => (keyOf[key] = i + 1));
+  const items = d.sections.flatMap((s) => s.items);
+  items.sort((a, b) => (keyOf[a.key] ?? 99) - (keyOf[b.key] ?? 99));
+  $("deck").innerHTML = items.map((i) => `<a class="cmd${i.href ? "" : " off"}" href="${esc(i.href ?? "#")}" data-key="${esc(i.key)}" title="${esc(i.label)}">${esc(SHORT[i.key] ?? i.label.replace("Builder · ", "").replace(/ Ontology$/, " onto"))}${keyOf[i.key] ? `<span class="k">${keyOf[i.key]}</span>` : ""}</a>`).join("");
+
+  // Agent I/O
+  const io = o.io ?? { live: [], last: null };
+  const streaming = !down && (io.live.length > 0 || d.calls.perMin > 0);
+  $("ioState").textContent = streaming ? (io.live.length ? `${io.live.length} LIVE RUN${io.live.length > 1 ? "S" : ""}` : "STREAMING") : "IDLE";
+  ioLevel = down ? 0.04 : Math.min(1, 0.06 + io.live.length * 0.45 + d.calls.perMin * 0.15);
+  let run = "";
+  if (io.live.length) run = io.live.slice(0, 2).map((r) => `<div class="run"><span class="m">LIVE · ${ago(r.startedAt)}</span><br><b>${esc(r.agent)}</b> is running</div>`).join("");
+  else if (io.last) {
+    const l = io.last, tot = Math.max(1, l.inTokens + l.outTokens);
+    run = `<div class="run"><span class="m">LAST RUN · ${ago(l.at)} · ${esc(l.model ?? "")}</span><br><b>${esc(l.agent)}</b> · ${short(l.inTokens)} in · ${short(l.outTokens)} out · ${usd(l.costUsd)}
+      <div class="tok"><i style="width:${l.inTokens / tot * 100}%;background:#A1A1A1"></i><i style="width:${l.outTokens / tot * 100}%;background:#FAFAFA"></i></div></div>`;
+  } else if (!down) run = `<div class="run"><span class="m">No runs yet</span></div>`;
+  $("io").innerHTML = run + d.calls.calls.slice(0, 3).map((c) =>
+    `<div class="call"><span class="a">${esc(c.agent)}</span><span>→</span><span class="t">${esc(c.target)}</span><span class="when">${ago(c.at)}</span></div>`).join("");
+
+  // wire
+  $("wire").innerHTML = down ? `<div class="empty">Unknown while the organization is offline.</div>` : (o.wire.map((w) =>
+    `<div class="wi${w.human ? " human" : ""}"><span class="c">${w.human ? "◆" : "▸"}</span><span><span class="tx">${esc(w.text)}</span>${w.tokens ? `<span class="tk">${short(w.tokens)} tokens</span>` : ""}</span><span class="when">${ago(w.at)}</span></div>`).join("") || `<div class="empty">Quiet.</div>`);
+
+  // hero
+  $("heroNum").textContent = down ? "–" : fmt(o.attention.total);
+  $("heroLink").href = live(`/twin/live#sandbox`);
+  $("heroBar").style.setProperty("--fill", down ? "0%" : Math.min(100, o.attention.total * 8) + "%");
+  const first = !down && o.attention.items[0];
+  $("heroNext").innerHTML = first ? `<span class="p">NEXT ◆</span><span>${esc(first.title)}</span>` : "";
+  $("heroNext").href = first ? live(first.href) : "#";
+
+  // pipeline
+  const p = o.pipeline ?? { queued: 0, inProgress: 0, review: 0, blocked: 0, done: 0 };
+  $("pipe").innerHTML = down ? `<span>—</span>` : [["Queued", p.queued], ["In progress", p.inProgress], ["Review", p.review, true], ["Blocked", p.blocked, true], ["Done", p.done]]
+    .map(([l, v, h], i) => `${i ? '<span class="ar">→</span>' : ""}<a class="${h && v ? "hot" : ""}" href="${esc(live(`/twin/live#sandbox`))}"><b>${fmt(v)}</b>${l}</a>`).join("");
+
+  // callouts
+  CALLOUTS.forEach((c) => {
+    const el = $("co-" + c.key), href = c.href(d);
+    el.href = href || "#"; el.classList.toggle("down", !c.ok(d));
+    el.querySelector(".cm").innerHTML = c.stat(d) || "—";
+    NODES[c.node].href = href; NODES[c.node].callout = el;
+  });
+
+  if (!down && lastPulse !== null && o.pulse !== lastPulse) burst(1);
+  if (!down) lastPulse = o.pulse;
+  placeCallouts();
+}
+
+async function load() {
+  try { render(await (await fetch("/data/hive.json", { cache: "no-store" })).json()); }
+  catch { $("mode").textContent = "○ OFFLINE"; $("mode").className = "mode warn"; }
+}
+
+/* ══════════ CLOCK ══════════ */
+function tick() {
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  $("clock").innerHTML = `${p(d.getHours())}:${p(d.getMinutes())}<small>:${p(d.getSeconds())}</small>`;
+  $("date").textContent = d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }).toUpperCase().replace(/,/g, " ·");
+}
+tick(); setInterval(tick, 1000);
+
+/* ══════════ COMMAND PALETTE + KEYS ══════════ */
+let palItems = [], palSel = 0;
+function palData() {
+  if (!state) return [];
+  const o = state.org, org = state.links.org;
+  const pages = state.sections.flatMap((s) => s.items.filter((i) => i.href).map((i) => ({ label: i.label, tag: s.label, href: i.href })));
+  if (o.down || !org) return pages;
+  const asks = o.attention.items.map((i) => ({ label: i.title, tag: "awaiting human", href: i.href, human: true }));
+  const tasks = o.directives.map((x) => ({ label: `${x.id} ${x.title}`, tag: x.status.replace(/_/g, " "), href: x.href }));
+  return [...pages, ...asks, ...tasks];
+}
+function palDraw() {
+  const q = $("palIn").value.trim().toLowerCase();
+  palItems = palData().filter((i) => !q || q.split(/\s+/).every((w) => (i.label + " " + i.tag).toLowerCase().includes(w)));
+  palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+  $("palRows").innerHTML = palItems.map((i, n) => `<div class="row${n === palSel ? " on" : ""}${i.human ? " human" : ""}" data-n="${n}"><span>${esc(i.label)}</span><span>${esc(i.tag)}</span></div>`).join("")
+    || `<div class="row"><span>No match</span><span></span></div>`;
+}
+const palOpen = () => { $("pal").classList.add("open"); $("palIn").value = ""; palSel = 0; palDraw(); $("palIn").focus(); };
+const palClose = () => $("pal").classList.remove("open");
+const go = (href, e) => { if (!href || href === "#") return; if (e?.metaKey || e?.ctrlKey) window.open(href, "_blank"); else location.href = href; };
+$("palIn").addEventListener("input", () => { palSel = 0; palDraw(); });
+$("palRows").addEventListener("click", (e) => { const r = e.target.closest("[data-n]"); if (r) go(palItems[+r.dataset.n]?.href, e); });
+$("pal").addEventListener("click", (e) => { if (e.target.id === "pal") palClose(); });
+addEventListener("keydown", (e) => {
+  const open = $("pal").classList.contains("open");
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); open ? palClose() : palOpen(); return; }
+  if (open) {
+    if (e.key === "Escape") palClose();
+    else if (e.key === "ArrowDown") { palSel = Math.min(palItems.length - 1, palSel + 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { palSel = Math.max(0, palSel - 1); palDraw(); e.preventDefault(); }
+    else if (e.key === "Enter") go(palItems[palSel]?.href, e);
+    return;
+  }
+  if (e.target.matches?.("input,textarea")) return;
+  if (e.key === "/") { e.preventDefault(); palOpen(); return; }
+  if (/^[1-9]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    const a = document.querySelector(`.cmd[data-key="${HOTKEYS[+e.key - 1]}"]`);
+    if (a && !a.classList.contains("off")) go(a.href, e);
+  }
+});
+
+/* ══════════ I/O BARS ══════════ */
+const eq = $("eq"), bars = [];
+for (let i = 0; i < 34; i++) { const b = document.createElement("i"); eq.appendChild(b); bars.push({ el: b, ph: Math.random() * 6.28, sp: 2 + Math.random() * 3 }); }
+function drawBars(t, E) {
+  const level = Math.min(1, ioLevel + E * 0.5);   // a spin (new activity) lifts the bars too
+  eq.classList.toggle("on", level > 0.3);
+  bars.forEach((b, i) => { const h = 0.08 + level * (0.35 + 0.65 * Math.abs(Math.sin(t * b.sp + b.ph + i * 0.3))); b.el.style.height = Math.min(100, h * 100) + "%"; });
+}
+
+/* ══════════ SWARM SPHERE ══════════
+   Graphite and white at rest. Spin energy comes from an idle cycle, a drag, or new activity in the org,
+   and it alone drives the mint. Leader lines run from each callout box to its node. */
+const cv = $("sphere"), c = cv.getContext("2d"), box = $("box"), tip = $("tip");
+const desktop = matchMedia("(min-width:1101px)");
+let W = 0, H = 0, CX = 0, CY = 0, R = 0, hotNode = -1;
+const CO_W = 148, CO_GAP = 44;   // callout box width, and its distance from the sphere
+function fit() {
+  const r = box.getBoundingClientRect(), d = devicePixelRatio || 1; W = r.width; H = r.height;
+  cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0);
+  if (desktop.matches) {
+    const css = getComputedStyle(document.documentElement), gut = parseFloat(css.getPropertyValue("--gut"));
+    const left = gut + parseFloat(css.getPropertyValue("--rail-l")), right = W - gut - parseFloat(css.getPropertyValue("--rail-r"));
+    CX = (left + right) / 2; CY = H * 0.46;
+    R = Math.max(110, Math.min((right - left - 2 * (CO_W + CO_GAP + 20)) / 2, H * 0.26));   // 20 px air between a box and its rail
+  } else { CX = W / 2; CY = H * 0.5; R = Math.min(W, H) * 0.32; }
+  placeCallouts();
+}
+function placeCallouts() {
+  CALLOUTS.forEach((co, i) => {
+    const el = $("co-" + co.key); if (!el) return;
+    if (!desktop.matches) { el.style.left = el.style.top = ""; return; }
+    const row = CALLOUTS.filter((x) => x.side === co.side).indexOf(co);
+    const y = CY + (row - 1) * Math.min(R * 0.95, 150) - 24;
+    const x = co.side === "l" ? CX - R - CO_GAP - CO_W : CX + R + CO_GAP;
+    el.style.left = x + "px"; el.style.top = y + "px";
+  });
+}
+new ResizeObserver(fit).observe(box);
+
+const NODES = [
+  { label: "ORGANIZATION", sub: "Agents · tasks · approvals", lat: 0.62, lon: 0.3 },
+  { label: "BUILDERS", sub: "Agent Builder 1 · 2", lat: 0.22, lon: 1.6 },
+  { label: "TWIN LIVE", sub: "Events · bills · agent calls", lat: 0.18, lon: 3.1 },
+  { label: "DECISIONS", sub: "Engine economics", lat: -0.22, lon: 4.4 },
+  { label: "ONTOLOGY", sub: "Telco · banking · health", lat: -0.38, lon: 5.6 },
+  { label: "CATALOGUE", sub: "Offers · drafts · scans", lat: -0.7, lon: 2.3 },
+];
+NODES.forEach((n) => { const cl = Math.cos(n.lat); n.x = cl * Math.cos(n.lon); n.y = Math.sin(n.lat); n.z = cl * Math.sin(n.lon); });
+
+const N = 700, pts = [];
+for (let i = 0; i < N; i++) {
+  const y = 1 - (i / (N - 1)) * 2, rad = Math.sqrt(1 - y * y), th = i * 2.399963;
+  const p = { x: Math.cos(th) * rad, y, z: Math.sin(th) * rad, tw: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8 };
+  let best = 0, bd = 9; NODES.forEach((n, k) => { const dd = (n.x - p.x) ** 2 + (n.y - p.y) ** 2 + (n.z - p.z) ** 2; if (dd < bd) { bd = dd; best = k; } });
+  p.n = best; p.prox = Math.max(0, 1 - bd / 0.9); pts.push(p);
+}
+const dust = [];
+for (let i = 0; i < 300; i++) { const r = Math.pow(Math.random(), 1.6), th = Math.random() * 6.28, ph = Math.acos(2 * Math.random() - 1);
+  dust.push({ x: Math.sin(ph) * Math.cos(th) * r, y: Math.cos(ph) * r, z: Math.sin(ph) * Math.sin(th) * r, tw: Math.random() * 6.28 }); }
+
+const BASE = 0.0012, VMAX = 0.035;
+let rot = 0, vel = BASE, kick = 0, dragging = false, moved = false, lastX = 0, mouse = { x: -9999, y: -9999 }, hovered = null;
+function burst(strength) { kick = Math.max(kick, VMAX * 0.8 * strength); }
+cv.addEventListener("mousemove", (e) => { const r = box.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+  if (dragging) { const dx = e.clientX - lastX; if (Math.abs(dx) > 2) moved = true; kick = Math.max(-VMAX, Math.min(VMAX, dx * 0.0022)); lastX = e.clientX; } });
+cv.addEventListener("mouseleave", () => { mouse.x = mouse.y = -9999; dragging = false; });
+cv.addEventListener("mousedown", (e) => { dragging = true; moved = false; lastX = e.clientX; });
+addEventListener("mouseup", () => { dragging = false; });
+cv.addEventListener("click", (e) => { if (hovered && !moved) go(hovered.href, e); });
+
+// idle cycle (0 rest .. 1 full spin), 20 s loop so the mint stays an event, not wallpaper
+function cycle(t) { const p = (t % 20) / 20, ease = (x) => x * x * (3 - 2 * x);
+  if (p < 0.55) return 0; if (p < 0.63) return ease((p - 0.55) / 0.08); if (p < 0.78) return 1; if (p < 0.92) return 1 - ease((p - 0.78) / 0.14); return 0; }
+const mix = (a, b, k) => a + (b - a) * k;
+const col = (e, a) => `rgba(${Math.round(mix(228, 54, e))},${Math.round(mix(228, 224, e))},${Math.round(mix(228, 173, e))},${a})`;
+const proj = (x, y, z, ry) => { const cr = Math.cos(ry), sr = Math.sin(ry); const X = x * cr - z * sr, Z = x * sr + z * cr; const pr = 1 / (1 + Z * 0.35); return [CX + X * R * pr, CY + y * R * pr, Z, pr]; };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let lastBars = 0;
+
+function frame(ms) {
+  const t = ms * 0.001;
+  const target = reduceMotion ? BASE * 0.4 : BASE + cycle(t) * (VMAX * 0.75 - BASE);
+  kick *= 0.965;
+  vel += ((Math.abs(kick) > Math.abs(target) ? kick : target) - vel) * 0.06;
+  rot += vel;
+  const E = Math.min(1, Math.max(0, (Math.abs(vel) - BASE) / (VMAX * 0.7)));
+  $("spinVal").textContent = Math.round(E * 100) + "%"; $("spinFill").style.width = E * 100 + "%";
+  if (ms - lastBars > 90) { drawBars(t, E); lastBars = ms; }
+  c.clearRect(0, 0, W, H);
+
+  const g = c.createRadialGradient(CX, CY, 0, CX, CY, R * 1.25);
+  g.addColorStop(0, col(E, 0.10 + 0.14 * E)); g.addColorStop(0.45, col(E, 0.03 + 0.06 * E)); g.addColorStop(1, col(E, 0));
+  c.fillStyle = g; c.beginPath(); c.arc(CX, CY, R * 1.25, 0, 6.28); c.fill();
+  c.beginPath(); c.ellipse(CX, CY, R * 1.14, R * 0.16, 0, 0, 6.28); c.strokeStyle = col(E, 0.06 + 0.22 * E); c.lineWidth = 1; c.stroke();
+
+  dust.forEach((d) => { const [sx, sy, Z, pr] = proj(d.x, d.y, d.z, rot * 1.4);
+    const a = (0.2 + 0.5 * ((Z + 1) / 2)) * (0.5 + 0.5 * Math.sin(t * 2 + d.tw)); c.fillStyle = col(E * 0.9, a * 0.8); c.fillRect(sx, sy, 1.3 * pr, 1.3 * pr); });
+
+  const busy = NODES.map((n, i) => Math.max(0, Math.sin(t * 0.35 + i * 1.3)));
+  const P = pts.map((p) => { const n = NODES[p.n], k = busy[p.n] * p.prox * 0.5;
+    let x = p.x + (n.x - p.x) * k, y = p.y + (n.y - p.y) * k, z = p.z + (n.z - p.z) * k; const L = Math.hypot(x, y, z);
+    const a = proj(x / L, y / L, z / L, rot), b = proj(x / L, y / L, z / L, rot - vel * 9);
+    return { p, sx: a[0], sy: a[1], Z: a[2], pr: a[3], tx: b[0], ty: b[1], hot: busy[p.n] * p.prox }; });
+
+  c.lineWidth = 0.5;
+  for (let i = 0; i < P.length; i += 3) { const a = P[i];
+    for (let j = i + 1; j < i + 7 && j < P.length; j++) { const b = P[j], dx = a.sx - b.sx, dy = a.sy - b.sy, dd = dx * dx + dy * dy;
+      if (dd < 3000) { c.strokeStyle = col(E, (1 - dd / 3000) * (0.07 + 0.12 * E) * ((a.Z + b.Z) / 2 + 1) / 2); c.beginPath(); c.moveTo(a.sx, a.sy); c.lineTo(b.sx, b.sy); c.stroke(); } } }
+
+  P.forEach((q) => { const depth = (q.Z + 1) / 2, tw = 0.55 + 0.45 * Math.sin(t * q.p.sp + q.p.tw);
+    const e = Math.min(1, E * (0.55 + 0.45 * depth) + E * q.hot * 0.3), a = (0.18 + depth * 0.62) * tw;
+    if (E > 0.05 && q.Z > -0.2) { c.strokeStyle = col(e, a * 0.55 * E); c.lineWidth = (0.6 + depth) * q.pr; c.beginPath(); c.moveTo(q.tx, q.ty); c.lineTo(q.sx, q.sy); c.stroke(); }
+    c.fillStyle = col(e, a); c.beginPath(); c.arc(q.sx, q.sy, (0.7 + depth * 1.5) * q.pr, 0, 6.28); c.fill(); });
+
+  // nodes, and leader lines from each callout box (desktop only)
+  hovered = null;
+  const boxRect = box.getBoundingClientRect();
+  NODES.forEach((n, i) => {
+    const [sx, sy, Z] = proj(n.x, n.y, n.z, rot), depth = (Z + 1) / 2, front = Z > -0.15;
+    n._sx = sx; n._sy = sy;
+    const isH = front && Math.hypot(mouse.x - sx, mouse.y - sy) < 16; if (isH && !hovered) hovered = n;
+    const lit = isH || hotNode === i;
+    n.callout?.classList.toggle("hot", lit);
+    if (desktop.matches && n.callout) {
+      const r = n.callout.getBoundingClientRect(), left = r.left < boxRect.left + CX;
+      const ax = (left ? r.right : r.left) - boxRect.left, ay = r.top + r.height / 2 - boxRect.top;
+      const elbow = left ? ax + 22 : ax - 22;
+      c.strokeStyle = lit ? "rgba(250,250,250,0.75)" : `rgba(161,161,161,${front ? 0.22 + 0.3 * depth : 0.08})`;
+      c.lineWidth = lit ? 1.2 : 0.8; c.setLineDash(front ? [] : [3, 4]);
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(elbow, ay); c.lineTo(sx, sy); c.stroke(); c.setLineDash([]);
+      c.fillStyle = c.strokeStyle; c.fillRect(ax - (left ? 0 : 3), ay - 1.5, 3, 3);
+    }
+    if (!front) return;
+    const r = lit ? 6.5 : 4.2;
+    const gg = c.createRadialGradient(sx, sy, 0, sx, sy, r * 3.4); gg.addColorStop(0, col(E, 0.55 * depth + 0.2)); gg.addColorStop(1, col(E, 0));
+    c.fillStyle = gg; c.beginPath(); c.arc(sx, sy, r * 3.4, 0, 6.28); c.fill();
+    c.fillStyle = `rgba(250,250,250,${0.6 + 0.4 * depth})`; c.beginPath(); c.arc(sx, sy, r * 0.62, 0, 6.28); c.fill();
+    if (lit) { c.strokeStyle = "rgba(250,250,250,0.9)"; c.lineWidth = 1.2; c.beginPath(); c.arc(sx, sy, r + 4, 0, 6.28); c.stroke(); }
+    if (!desktop.matches) { c.font = "500 9px 'JetBrains Mono'"; c.textAlign = "left"; c.fillStyle = `rgba(161,161,161,${0.35 + 0.65 * depth})`; c.fillText(n.label, sx + 10, sy + 3); }
+  });
+
+  if (hovered) { tip.style.display = "block"; tip.style.left = boxRect.left + hovered._sx + "px"; tip.style.top = boxRect.top + hovered._sy + "px";
+    tip.innerHTML = `${hovered.label}<small>${hovered.sub} · ${hovered.href ? "click to open" : "not reachable"}</small>`; cv.style.cursor = hovered.href ? "pointer" : "not-allowed"; }
+  else { tip.style.display = "none"; cv.style.cursor = dragging ? "grabbing" : "grab"; }
+  requestAnimationFrame(frame);
+}
+
+fit(); load(); setInterval(load, 10000);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

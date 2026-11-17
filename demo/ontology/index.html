@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171717">
+<title>ATLAS Ontology Explorer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23171717'/%3E%3Crect x='11.5' y='51' width='41' height='4' fill='%2336E0AD'/%3E%3Ctext x='32' y='40' font-family='Helvetica,sans-serif' font-weight='700' font-size='38' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<script>
+// Same theme logic as the ATLAS Agent Organization: stored choice, else the system setting, default dark.
+(function () { var t = null; try { t = localStorage.getItem("theme"); } catch (e) {}
+  var dark = t === "dark" || (t !== "light" && !(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
+  document.documentElement.classList.toggle("dark", dark); document.documentElement.style.colorScheme = dark ? "dark" : "light"; })();
+</script>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+/* Design tokens copied from the running ATLAS Agent Organization (shadcn-style names), light first, dark under html.dark. */
+:root {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 0.5rem;
+  --background: oklch(1 0 0); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0);
+  --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0);
+  --border: oklch(0.922 0 0); --input: oklch(0.922 0 0);
+  --primary: rgb(0, 35, 75); --primary-foreground: #fff; --ring: rgb(0, 160, 227);
+  --sidebar: #f2f2f2; --sidebar-foreground: oklch(0.145 0 0); --sel: rgb(11, 58, 107);
+  --d-marketing: #8E5CD9; --d-care: #E0648A; --d-operations: #F0A030; --d-billing: #2FA67A; --d-network: #2E86D6; --d-governance: #6B7A8C; --d-executive: #171717;
+}
+html.dark {
+  --background: oklch(0.205 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.205 0 0);
+  --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0); --accent: oklch(0.269 0 0);
+  --border: oklch(1 0 0 / 0.1); --input: oklch(1 0 0 / 0.15);
+  --primary: rgb(0, 160, 227); --primary-foreground: rgb(0, 23, 47);
+  --sidebar: oklch(0.269 0 0); --sidebar-foreground: oklch(0.985 0 0);
+}
+:root { --edge: color-mix(in oklab, var(--muted-foreground) 55%, transparent); --edge-hot: var(--ring); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: var(--font-sans); font-size: 14px; background: var(--background); color: var(--foreground); }
+.app { display: flex; height: 100vh; }
+/* sidebar: 240 px, same nav item metrics as the Agent Organization */
+.sb { width: 240px; flex: none; background: var(--sidebar); color: var(--sidebar-foreground); display: flex; flex-direction: column; padding: 12px; gap: 4px; overflow: auto; }
+.sb-head { display: flex; align-items: center; gap: 10px; padding: 6px 8px 14px; }
+.sb-head svg { width: 26px; height: 26px; flex: none; }
+.sb-head b { font-size: 14px; font-weight: 600; display: block; line-height: 1.2; }
+.sb-head span { font-size: 11px; color: var(--muted-foreground); }
+.sb-label { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: color-mix(in oklab, var(--muted-foreground) 60%, transparent); padding: 14px 8px 4px; }
+.nav { display: flex; align-items: center; gap: 10px; width: 100%; height: 32px; padding: 6px 8px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 500; color: color-mix(in oklab, var(--sidebar-foreground) 80%, transparent); background: transparent; border: 0; text-decoration: none; cursor: pointer; text-align: left; }
+.nav svg { width: 16px; height: 16px; flex: none; }
+.nav:hover { background: color-mix(in oklab, var(--sidebar-foreground) 8%, transparent); }
+.nav[aria-pressed="true"] { background: var(--sel); color: #fff; }
+.nav:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+.sb-foot { margin-top: auto; padding-top: 10px; }
+.mainc { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: auto; }
+.topbar { height: 60px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 24px; border-bottom: 1px solid var(--border); }
+.topbar h1 { margin: 0; font-size: 14px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; }
+.search { margin-left: auto; }
+.search input { font: inherit; font-size: 13px; height: 36px; padding: 0 12px; border-radius: calc(var(--radius) * 0.8); border: 1px solid var(--input); background: transparent; color: var(--foreground); width: 280px; }
+.search input::placeholder { color: var(--muted-foreground); }
+.search input:focus { outline: 2px solid var(--ring); outline-offset: 0; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 24px 0; align-items: center; }
+.filters .lbl { font-size: 10px; letter-spacing: 1px; color: var(--muted-foreground); margin-right: 6px; text-transform: uppercase; }
+.chip { font: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--foreground); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.chip:hover { background: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--muted); border-color: color-mix(in oklab, var(--foreground) 25%, transparent); }
+.chip:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding: 14px 24px 16px; flex: 1; min-height: 0; }
+@media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .app { flex-direction: column; height: auto; } .sb { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; } .sb-label { display: none; } .nav { width: auto; } .sb-foot { margin: 0 0 0 auto; padding: 0; } }
+.map, .panel, .graphwrap { background: var(--card); border: 1px solid var(--border); border-radius: calc(var(--radius) * 1.5); }
+.map { padding: 8px; overflow: auto; }
+.colhead { font-size: 10px; fill: var(--muted-foreground); text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+.node { cursor: pointer; }
+.node rect.pill { fill: var(--muted); stroke: var(--border); }
+.node text { font-family: var(--font-sans); font-size: 11.5px; font-weight: 500; fill: var(--foreground); pointer-events: none; }
+.node:focus-visible rect.pill, .node:hover rect.pill { stroke: var(--ring); stroke-width: 1.5; }
+.node.sel rect.pill { fill: var(--sel); stroke: var(--ring); stroke-width: 2; }
+.node.sel text { fill: #fff; }
+.node.dim { opacity: .22; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1; opacity: .55; }
+.edge.hot { stroke: var(--edge-hot); stroke-width: 2; opacity: 1; }
+.edge.dim { opacity: .08; }
+.panel { padding: 18px; align-self: start; position: sticky; top: 0; max-height: calc(100vh - 235px); overflow: auto; }
+.panel h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.panel .sub { font-size: 12px; color: var(--muted-foreground); margin-bottom: 14px; }
+.panel h3 { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-foreground); margin: 18px 0 8px; }
+.panel p { line-height: 1.55; }
+.layer { border-left: 2px solid var(--ring); padding: 2px 0 2px 12px; margin: 8px 0; font-size: 13px; line-height: 1.5; }
+.layer b { display: block; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-foreground); margin-bottom: 2px; }
+.layer code, .mono { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 11.5px; }
+.pill-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font: inherit; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--muted); border: 1px solid var(--border); color: var(--foreground); text-decoration: none; cursor: pointer; }
+a.tag:hover, button.tag:hover { border-color: var(--ring); }
+.cap { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.status { font-size: 10.5px; font-weight: 500; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.status.atlas-api { background: color-mix(in oklab, #2FA67A 22%, transparent); color: #2FA67A; }
+.status.awaiting-api { background: color-mix(in oklab, #F0A030 22%, transparent); color: #F0A030; }
+.empty { color: var(--muted-foreground); font-size: 13px; line-height: 1.6; }
+.warn { margin: 8px 24px 0; padding: 8px 12px; border-radius: 8px; background: color-mix(in oklab, #F0A030 20%, transparent); color: var(--foreground); font-size: 12px; display: none; }
+.graphwrap { position: relative; overflow: hidden; display: none; height: calc(100vh - 235px); min-height: 440px; }
+body.view-graph .graphwrap { display: block; }
+body.view-graph .map { display: none; }
+#gcanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#gcanvas.grabbing { cursor: grabbing; }
+.gctl { position: absolute; left: 12px; top: 12px; max-height: calc(100% - 24px); overflow: auto; background: color-mix(in oklab, var(--card) 92%, transparent); border: 1px solid var(--border); border-radius: calc(var(--radius) * 1.25); padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column; gap: 5px; max-width: 220px; }
+.gctl h4 { margin: 0 0 2px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-foreground); }
+.gctl label { display: flex; align-items: center; gap: 7px; cursor: pointer; font-weight: 500; }
+.gctl label i { width: 10px; height: 10px; display: inline-block; border-radius: 50%; }
+.gctl .row { display: flex; gap: 6px; margin-top: 4px; }
+.gctl button { font: inherit; font-size: 11.5px; font-weight: 500; padding: 5px 10px; border-radius: calc(var(--radius) * 0.8); border: 1px solid var(--input); background: transparent; color: var(--foreground); cursor: pointer; }
+.gctl button:hover { background: var(--muted); }
+.gctl-head { all: unset; cursor: pointer; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-foreground); }
+.gctl.collapsed > :not(.gctl-head) { display: none; }
+.ghint { position: absolute; right: 12px; bottom: 10px; font-size: 11px; color: var(--muted-foreground); }
+footer { padding: 4px 24px 16px; font-size: 11px; color: var(--muted-foreground); }
+</style>
+</head>
+<body class="view-graph">
+<div class="app">
+  <aside class="sb">
+    <div class="sb-head">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="13" fill="#171717" stroke="#12406F"/><rect x="11.5" y="51" width="41" height="4" fill="#36E0AD"/><text x="32" y="40" font-family="Montserrat,Helvetica,sans-serif" font-weight="700" font-size="38" fill="#fff" text-anchor="middle">A</text></svg>
+      <div><b>Ontology</b><span id="subtitle">ATLAS AI Labs</span></div>
+    </div>
+    <div class="sb-label">View</div>
+    <button class="nav" type="button" id="tab-graph" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7.5l3 8M16 7.5l-3 8M8.5 6h7"/></svg>Graph</button>
+    <button class="nav" type="button" id="tab-map" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="15" y="4" width="6" height="6" rx="1"/><rect x="9" y="14" width="6" height="6" rx="1"/><path d="M9 7h6M6 10v2.5h6M18 10v2.5h-6"/></svg>Map</button>
+    <div id="atlas-platform" data-current="ontology"></div>
+    <div class="sb-foot"><button class="nav" type="button" id="theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span id="theme-label">Light mode</span></button></div>
+  </aside>
+  <div class="mainc">
+    <div class="topbar"><h1>Ontology</h1><div class="search"><input id="q" type="search" placeholder="Search a term, API, process, view or agent" aria-label="Search the ontology" autocomplete="off"></div></div>
+    <div class="warn" id="warn" role="alert"></div>
+    <div class="filters" id="filters" role="group" aria-label="Filter by department"><span class="lbl">Department</span></div>
+    <main>
+      <section class="map"><svg id="svg" role="img" aria-label="Map of workflows, ontology terms and agents"></svg></section>
+      <section class="graphwrap" id="graphwrap"><canvas id="gcanvas" aria-label="Animated relationship graph of departments, ontology terms, agents, workflows, TMF APIs, BSS domains and capabilities"></canvas><div class="gctl" id="gctl"></div><div class="ghint">Drag a node · scroll to zoom · drag the background to pan · click to open</div></section>
+      <aside class="panel" id="panel" aria-live="polite"></aside>
+    </main>
+    <footer id="foot"></footer>
+  </div>
+</div>
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+let DEPTS = ["Marketing", "Care", "Operations", "Billing", "Network", "Governance", "Executive"];
+// Another industry (P0-33) brings its own departments; they take the same seven colours in order.
+const PAL = ["marketing", "care", "operations", "billing", "network", "governance", "executive"];
+const dcol = (d) => { const i = DEPTS.indexOf(d); return `var(--d-${PAL[i >= 0 ? i % PAL.length : 6]})`; };
+const INDUSTRY = new URLSearchParams(location.search).get("industry");
+const STD = () => D?.standard ?? "TMF Open API";
+const el = (tag, attrs = {}, text) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; return n; };
+const h = (tag, attrs = {}, ...kids) => { const n = document.createElement(tag); for (const k in attrs) { if (k === "class") n.className = attrs[k]; else if (k === "text") n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]); } kids.flat().forEach(c => c != null && n.append(c.nodeType ? c : document.createTextNode(c))); return n; };
+
+let D, sel = null, deptOn = new Set(DEPTS), query = "";
+const W = 800, ROW = 25, TOP = 56, GAP = 10;
+const colX = { wf: 12, term: 240, agent: 510 }, colW = { wf: 190, term: 200, agent: 280 };
+const pos = {};
+
+function industrySwitcher() {
+  fetch("/data/industries.json").then((r) => r.json()).then((list) => {
+    const s = h("select", { "aria-label": "Industry", style: "margin:2px 8px 6px;font:inherit;font-size:13px;height:32px;border-radius:8px;border:1px solid var(--input);background:transparent;color:inherit;padding:0 8px" });
+    for (const x of list) { const o = h("option", { value: x.id, text: `${x.label} · ${x.operator}` }); if ((INDUSTRY ?? "telco") === x.id) o.selected = true; s.append(o); }
+    s.onchange = () => { location.href = s.value === "telco" ? "/" : `/?industry=${s.value}`; };
+    const view = [...document.querySelectorAll(".sb-label")].find((l) => l.textContent === "View");
+    view.before(h("div", { class: "sb-label", text: "Industry" }), s);
+  }).catch(() => {});
+}
+async function boot() {
+  const res = await fetch("/data/ontology.json" + (INDUSTRY ? `?industry=${encodeURIComponent(INDUSTRY)}` : ""), { cache: "no-store" });
+  D = await res.json();
+  if (D.departments) { DEPTS = D.departments; deptOn = new Set(DEPTS); }
+  if (D.standard) KINDS.tmf.label = D.standard;
+  industrySwitcher();
+  const nGen = D.terms.filter(isGen).length;
+  document.getElementById("subtitle").textContent = `${D.operator} · ${D.terms.length - nGen} terms` + (nGen ? ` + ${nGen} general concepts` : "") + (D.industry ? ` · ${D.agents.length} agents` : "") + (D.pack ? ` + ${D.pack.nodes.length} generic pack nodes` : "");
+  if (D.industry) document.getElementById("foot").textContent = `${D.operator} (${D.industryLabel}). ${D.source} Same Explorer, same agent organization model: a different ontology gives a different organization.`;
+  else document.getElementById("foot").textContent = "Glossary view of the ATLAS AI Labs ontology: TMF Open API concepts, the Generic capability mapping and ATLAS AI Labs' own wording. Agents come from the agent organization; capability status shows whether a BSS API exists yet. This map shows the ATLAS AI Labs terms; the Graph also shows the general telco concepts and how they relate.";
+  if (D.validationErrors?.length) { const w = document.getElementById("warn"); w.style.display = "block"; w.textContent = "Ontology check: " + D.validationErrors.join("; "); }
+  const f = document.getElementById("filters");
+  for (const d of DEPTS.slice(0, 6)) {
+    const b = h("button", { class: "chip", type: "button", "aria-pressed": "true" }, h("i", { style: `background:${dcol(d)}` }), d);
+    b.onclick = () => { if (deptOn.has(d)) deptOn.delete(d); else deptOn.add(d); b.setAttribute("aria-pressed", deptOn.has(d)); draw(); };
+    f.append(b);
+  }
+  document.getElementById("q").addEventListener("input", (e) => { query = e.target.value.trim().toLowerCase(); draw(); });
+  const hash = decodeURIComponent(location.hash.slice(1));
+  if (hash) sel = hash;
+  draw();
+}
+
+const isGen = (t) => t.layer === "general";
+const termMatches = (t) => !query || [t.id, t.nordwave.label, ...t.nordwave.synonyms, t.tmf.api ?? "", t.tmf.concept ?? "", t.atlas?.term ?? "", t.telco?.why ?? ""].some(s => s.toLowerCase().includes(query));
+const termVisible = (t) => deptOn.has(t.department) && termMatches(t);
+
+function draw() {
+  if (document.body.classList.contains("view-graph")) { G.alpha = Math.max(G.alpha, 0.35); panel(); return; }
+  const svg = document.getElementById("svg"); svg.replaceChildren();
+  const order = (a, b) => DEPTS.indexOf(a.department) - DEPTS.indexOf(b.department);
+  const terms = D.terms.filter(t => !isGen(t)).sort(order);
+  const used = new Set(terms.flatMap(t => t.agents));
+  const agents = D.agents.filter(a => used.has(a.key)).sort(order);
+  // vertical placement with a small gap between departments
+  let y = TOP, last = null;
+  for (const t of terms) { if (last && last !== t.department) y += GAP; last = t.department; pos["t:" + t.id] = y; y += ROW; }
+  const termsEnd = y; y = TOP; last = null;
+  for (const a of agents) { if (last && last !== a.department) y += GAP; last = a.department; pos["a:" + a.key] = y; y += ROW; }
+  const H = Math.max(termsEnd, y) + 16;
+  const wfStart = TOP + 40;
+  D.workflows.forEach((w, i) => { pos["w:" + w.id] = wfStart + i * 60; });
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", "100%"); svg.style.minWidth = "680px";
+
+  svg.append(el("text", { class: "colhead", x: colX.wf, y: 30 }, "Workflows (Agent Builder)"), el("text", { class: "colhead", x: colX.term, y: 30 }, "Ontology terms"), el("text", { class: "colhead", x: colX.agent, y: 30 }, "Agents (Agent Organization)"));
+
+  const focus = focusSet();
+  const edges = el("g"), nodes = el("g"); svg.append(edges, nodes);
+  const curve = (x1, y1, x2, y2) => `M${x1},${y1} C${x1 + (x2 - x1) / 2},${y1} ${x1 + (x2 - x1) / 2},${y2} ${x2},${y2}`;
+  const pill = (key, x, w, label, cls, color, onclick, visible) => {
+    const g = el("g", { class: `node ${cls}${sel === key ? " sel" : ""}${visible ? "" : " dim"}`, tabindex: 0, role: "button", "aria-label": label, transform: `translate(${x},${pos[key] - 15})` });
+    g.append(el("rect", { class: "pill", width: w, height: 21, rx: 10.5 }), el("circle", { cx: 11, cy: 10.5, r: 4, fill: color }), el("text", { x: 22, y: 14.5 }, label.length > 36 ? label.slice(0, 35) + "…" : label));
+    g.onclick = onclick; g.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onclick(); } };
+    nodes.append(g);
+  };
+  // edges
+  for (const w of D.workflows) for (const id of w.terms) {
+    if (pos["t:" + id] === undefined) continue;   // general telco concepts are not rows in the map
+    const t = D.terms.find(x => x.id === id);
+    const hot = focus && focus.has("w:" + w.id) && focus.has("t:" + id);
+    edges.append(el("path", { class: `edge${hot ? " hot" : ""}${focus && !hot ? " dim" : ""}${!focus && !termVisible(t) ? " dim" : ""}`, d: curve(colX.wf + colW.wf, pos["w:" + w.id] - 4, colX.term, pos["t:" + id] - 4) }));
+  }
+  for (const t of terms) for (const k of t.agents) {
+    const hot = focus && focus.has("t:" + t.id) && focus.has("a:" + k);
+    edges.append(el("path", { class: `edge${hot ? " hot" : ""}${focus && !hot ? " dim" : ""}${!focus && !termVisible(t) ? " dim" : ""}`, d: curve(colX.term + colW.term, pos["t:" + t.id] - 4, colX.agent, pos["a:" + k] - 4) }));
+  }
+  // nodes
+  for (const w of D.workflows) pill("w:" + w.id, colX.wf, colW.wf, w.name, "wf", "var(--ring)", () => choose("w:" + w.id), !focus || focus.has("w:" + w.id));
+  for (const t of terms) pill("t:" + t.id, colX.term, colW.term, t.nordwave.label, "term", dcol(t.department), () => choose("t:" + t.id), (!focus || focus.has("t:" + t.id)) && termVisible(t));
+  for (const a of agents) pill("a:" + a.key, colX.agent, colW.agent, a.name, "agent", dcol(a.department), () => choose("a:" + a.key), (!focus || focus.has("a:" + a.key)) && a.key && D.terms.some(t => t.agents.includes(a.key) && termVisible(t)));
+  panel();
+}
+
+function focusSet() {
+  if (!sel) return null;
+  const s = new Set([sel]); const [k, id] = [sel[0], sel.slice(2)];
+  if (k === "t") { const t = D.terms.find(x => x.id === id); t?.agents.forEach(a => s.add("a:" + a)); t?.workflows.forEach(w => s.add("w:" + w)); }
+  if (k === "a") D.terms.filter(t => t.agents.includes(id)).forEach(t => { s.add("t:" + t.id); t.workflows.forEach(w => s.add("w:" + w)); });
+  if (k === "w") { const w = D.workflows.find(x => x.id === id); w?.terms.forEach(t => { s.add("t:" + t); D.terms.find(x => x.id === t).agents.forEach(a => s.add("a:" + a)); }); }
+  return s;
+}
+function choose(key) { sel = sel === key ? null : key; history.replaceState(null, "", sel ? "#" + encodeURIComponent(sel) : location.pathname); draw(); }
+
+function panel() {
+  const p = document.getElementById("panel"); p.replaceChildren();
+  if (!sel) { p.append(h("h2", { text: "Pick something on the map" }), h("p", { class: "empty", text: "Select an ontology term to see how it is worded at each layer, which agents and workflows use it, and which BSS capabilities sit behind it. Select an agent or a workflow to see the terms it relies on. Use the search box or the department chips to narrow the map." })); return; }
+  const k = sel[0], id = sel.slice(2);
+  const tagBtn = (label, key) => h("button", { class: "tag", type: "button", onclick: () => { sel = key; draw(); } }, label);
+  const packLinks = (key) => {
+    if (!D.pack) return [];
+    const lab = (x) => D.pack.nodes.find(n => n.id === x)?.label ?? D.terms.find(t => "t:" + t.id === x)?.nordwave.label ?? x;
+    const rows = D.pack.edges.filter(([a, , b]) => a === key || b === key);
+    if (!rows.length) return [];
+    const groups = new Map();
+    for (const [a, rel, b, note] of rows) { const out = a === key, other = out ? b : a, g = (out ? rel : rel + " (this)") ; if (!groups.has(g)) groups.set(g, []); groups.get(g).push([other, note]); }
+    const parts = [];
+    for (const [g, arr] of groups) {
+      parts.push(h("h3", { text: g.startsWith("homonym") ? "⚠ Same word, different meaning" : g }));
+      if (g.startsWith("homonym")) for (const [o, note] of arr) parts.push(h("div", { class: "layer", style: "border-color:#E11D48" }, tagBtn(lab(o), o), h("div", { text: note ?? "" })));
+      else parts.push(h("div", { class: "pill-list" }, arr.slice(0, 40).map(([o]) => tagBtn(lab(o), o)), arr.length > 40 ? h("span", { class: "empty", text: ` +${arr.length - 40} more` }) : null));
+    }
+    return parts;
+  };
+  const pn = D.pack?.nodes.find(n => n.id === sel);
+  if (pn) {
+    p.append(h("h2", { text: pn.label }), h("div", { class: "sub", text: `${KINDS[pn.kind]?.label ?? pn.kind} · generic pack` }));
+    const d = pn.data ?? {};
+    const show = (label, v) => v == null || v === "" || (Array.isArray(v) && !v.length) ? null : h("div", { class: "layer" }, h("b", { text: label }), Array.isArray(v) ? v.join(", ") : String(v));
+    p.append(...[show("Meaning", d.description), show("Kind", d.termKind), show("Also called", d.synonyms ?? d.aliases), show("Values", d.values), show("Risk", d.risk && `${d.risk} · ${d.reason ?? ""}`),
+      show("Status", d.status), show("Domain", d.domain && `${d.domain} ${d.version ?? ""}`), show("Scope", d.scope), show("Change gate", d.gate), show("Thresholds", d.thresholds),
+      show("Phantom", d.phantom ? "Documented but not yet a column in the data platform; do not rely on it" : null), show("Notes", d.notes), show("Confidence", d.confidence)].filter(Boolean));
+    p.append(...packLinks(sel));
+    p.append(h("p", { class: "empty", text: "From the ATLAS semantic layer (catalogue and order slice) and the intelligence-platform concept registry, mapped to ATLAS AI Labs. Mappings are curated and need review." }));
+    return;
+  }
+  if (k === "t") {
+    const t = D.terms.find(x => x.id === id);
+    p.append(h("h2", { text: t.nordwave.label }), h("div", { class: "sub", text: `${t.department} · ${t.kind} · ${t.id}` }), h("p", { text: t.nordwave.description }));
+    if (isGen(t)) {
+      p.append(h("h3", { text: "Why it matters" }), h("p", { text: t.telco.why }));
+      if (t.telco.kpis?.length) p.append(h("h3", { text: "Typical measures" }), h("div", { class: "pill-list" }, t.telco.kpis.map(k => h("span", { class: "tag", text: k }))));
+      p.append(h("h3", { text: "Standards" }), h("div", { class: "layer" }, h("b", { text: STD() }), t.tmf.api ? [h("code", { text: t.tmf.api }), " · " + t.tmf.concept] : "No dedicated API assumed"), h("div", { class: "layer" }, h("b", { text: "Also called" }), t.nordwave.synonyms.join(", ")), h("p", { class: "empty", text: "General telecom knowledge. Not linked to a ATLAS API. Mappings are curated and need expert review." }));
+    } else p.append(h("h3", { text: "Three layers" }),
+      h("div", { class: "layer" }, h("b", { text: STD() }), t.tmf.api ? h("code", { text: t.tmf.api }) : "No dedicated API assumed", " · " + (t.tmf.concept ?? "")),
+      h("div", { class: "layer" }, h("b", { text: "Generic capability mapping" }), t.atlas ? [h("code", { text: t.atlas.term }), ` · ${t.atlas.domain ?? "no domain"} · ${t.atlas.confidence ?? ""}`, t.atlas.resources.length ? h("div", { class: "mono", text: t.atlas.resources.join(", ") }) : null] : "No matching term in the generic pack yet"),
+      h("div", { class: "layer" }, h("b", { text: "ATLAS AI Labs says" }), t.nordwave.synonyms.join(", ")));
+    const rels = (D.relations ?? []).filter(([a, , b]) => a === id || b === id);
+    if (rels.length) {
+      const lab = (tid) => D.terms.find(x => x.id === tid)?.nordwave.label ?? tid;
+      p.append(h("h3", { text: "Relations" }), ...rels.map(([a, rel, b]) => h("div", { class: "cap" }, a === id ? [h("span", { text: rel.replace("-", " ") }), tagBtn(lab(b), "t:" + b)] : [tagBtn(lab(a), "t:" + a), h("span", { text: rel.replace("-", " ") + " this" })])));
+    }
+    const pl = packLinks("t:" + id);
+    if (pl.length) p.append(h("h3", { text: "In the generic pack", style: "color:var(--ring)" }), ...pl);
+    if (t.capabilities.length) p.append(h("h3", { text: "Capabilities" }), ...t.capabilities.map(c => h("div", { class: "cap" }, h("span", { class: "mono", text: c.id }), h("span", { class: `status ${c.status}`, text: c.status === "atlas-api" ? "API exists" : "Awaiting API" }))));
+    if (!isGen(t) || t.agents.length) p.append(h("h3", { text: "Used by agents" }), h("div", { class: "pill-list" }, t.agents.length ? t.agents.map(a => { const ag = D.agents.find(x => x.key === a); return tagBtn(ag.name, "a:" + a); }) : [h("span", { class: "empty", text: "None yet" })]));
+    if (!isGen(t) || t.workflows.length) p.append(h("h3", { text: "Used in workflows" }), h("div", { class: "pill-list" }, t.workflows.length ? t.workflows.map(w => tagBtn(D.workflows.find(x => x.id === w).name, "w:" + w)) : [h("span", { class: "empty", text: "None yet" })]));
+  } else if (k === "a") {
+    const a = D.agents.find(x => x.key === id);
+    p.append(h("h2", { text: a.name }), h("div", { class: "sub", text: `${a.department} · ${a.title} · ${a.status} · kit: ${a.kit}` }));
+    if (a.url) p.append(h("p", {}, h("a", { class: "tag", href: a.url, target: "_blank", rel: "noopener", text: "Open in ATLAS Agent Organization ↗" })));
+    p.append(h("h3", { text: "Terms this agent works with" }), h("div", { class: "pill-list" }, D.terms.filter(t => t.agents.includes(id)).map(t => tagBtn(t.nordwave.label, "t:" + t.id))));
+  } else if (k === "d") {
+    p.append(h("h2", { text: id }), h("div", { class: "sub", text: "Department" }));
+    p.append(h("h3", { text: "Ontology terms" }), h("div", { class: "pill-list" }, D.terms.filter(t => t.department === id).map(t => tagBtn(t.nordwave.label, "t:" + t.id))));
+    p.append(h("h3", { text: "Agents" }), h("div", { class: "pill-list" }, D.agents.filter(a => a.department === id).map(a => tagBtn(a.name, "a:" + a.key))));
+  } else if (k === "x" || k === "q" || k === "c") {
+    const rel = D.terms.filter(t => k === "x" ? t.tmf?.api === id : k === "q" ? t.atlas?.domain === id : t.capabilities.some(c => c.id === id));
+    p.append(h("h2", { text: id }), h("div", { class: "sub", text: k === "x" ? STD() : k === "q" ? "ATLAS BSS domain" : "Capability" }));
+    p.append(h("h3", { text: "Ontology terms that use it" }), h("div", { class: "pill-list" }, rel.map(t => tagBtn(t.nordwave.label, "t:" + t.id))));
+  } else {
+    const w = D.workflows.find(x => x.id === id);
+    p.append(h("h2", { text: w.name }), h("div", { class: "sub", text: `ATLAS Agent Builder · ${w.status}` }));
+    if (D.links?.sim) p.append(h("p", {}, h("a", { class: "tag", href: D.links.sim, target: "_blank", rel: "noopener", text: "Open ATLAS Agent Builder ↗" })));
+    p.append(h("h3", { text: "Terms this workflow resolves" }), h("div", { class: "pill-list" }, w.terms.map(tid => tagBtn(D.terms.find(x => x.id === tid).nordwave.label, "t:" + tid))));
+  }
+}
+// ---------------------------------------------------------------- Graph view (Obsidian-style force graph, no libraries)
+const KINDS = {
+  dept:       { label: "Departments",  r: 15, prefix: "d" },
+  workflow:   { label: "Workflows",    r: 11, prefix: "w" },
+  term:       { label: "Ontology terms", r: 8, prefix: "t" },
+  gterm:      { label: "General telco concepts", r: 6, prefix: "t" },
+  agent:      { label: "Agents",       r: 5,  prefix: "a" },
+  tmf:        { label: "TMF Open APIs", r: 8, prefix: "x" },
+  domain:     { label: "ATLAS BSS domains", r: 10, prefix: "q" },
+  capability: { label: "Capabilities", r: 3.5, prefix: "c" },
+  // generic pack (P0-19): the full BSS semantic layer and the intelligence-platform analytics layer
+  "pack-term":         { label: "ATLAS BSS terms", r: 7, color: "#FF6B4A", pack: true },
+  resource:            { label: "BSS API resources", r: 4.5, color: "#2F80ED", pack: true },
+  relationship:        { label: "Resource relationships", r: 3, color: "#56CCF2", pack: true },
+  process:             { label: "BPMN processes", r: 4, color: "#27AE60", pack: true },
+  recipe:              { label: "Eligibility recipes", r: 4, color: "#9B51E0", pack: true },
+  action:              { label: "Write actions (risk)", r: 6, color: "#EB5757", pack: true },
+  persona:             { label: "Personas", r: 7, color: "#F2C94C", pack: true },
+  "analytics-concept": { label: "Analytics concepts", r: 7, color: "#14B8A6", pack: true },
+  "analytics-value":   { label: "Analytics values", r: 3.5, color: "#5EEAD4", pack: true },
+  view:                { label: "Analytics views", r: 3.5, color: "#0891B2", pack: true },
+  "view-group":        { label: "View groups", r: 8, color: "#155E75", pack: true },
+  "gold-table":        { label: "Gold tables", r: 4, color: "#A16207", pack: true },
+  "analytics-policy":  { label: "Score thresholds", r: 6, color: "#DB2777", pack: true },
+  "capability-gap":    { label: "Capability gaps", r: 6, color: "#9CA3AF", pack: true },
+};
+const PACK_DEFAULT_OFF = new Set(["relationship", "analytics-value", "view"]);
+let seed = 7;   // fixed seed: the same layout on every load
+const rng = () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const G = { nodes: [], links: [], byId: new Map(), adj: new Map(), on: Object.assign({ dept: true, workflow: true, term: true, gterm: true, agent: true, tmf: true, domain: true, capability: false }, Object.fromEntries(Object.keys(KINDS).filter(k => KINDS[k].pack).map(k => [k, !PACK_DEFAULT_OFF.has(k)]))),
+  animate: true, alpha: 1, t: 0, scale: 1, tx: 0, ty: 0, w: 800, h: 600, hover: null, drag: null, pan: null, raf: 0, built: false };
+const probe = Object.assign(document.createElement("i"), { hidden: true }); document.body.append(probe);
+const css = (n) => { probe.style.color = `var(${n})`; return getComputedStyle(probe).color; };   // resolves var() and color-mix() for the canvas
+const cssColor = (v) => v.startsWith("var(") ? css(v.slice(4, -1)) : v;
+let view = new URLSearchParams(location.search).get("view") === "map" ? "map" : "graph";
+
+function buildGraph() {
+  const add = (id, kind, label, data = {}, color) => { if (G.byId.has(id)) return G.byId.get(id); const a = rng() * 6.283, d = 80 + rng() * 240; const n = { id, kind, label, data, color, x: Math.cos(a) * d, y: Math.sin(a) * d, vx: 0, vy: 0, phase: rng() * 6.283 }; G.nodes.push(n); G.byId.set(id, n); return n; };
+  const link = (a, b, len, k, faint) => { if (a && b && a !== b) G.links.push({ a, b, len, k, faint }); };
+  for (const d of DEPTS.slice(0, 6)) add("d:" + d, "dept", d, {}, dcol(d));
+  for (const w of D.workflows) add("w:" + w.id, "workflow", w.name, w, "var(--ring)");
+  for (const t of D.terms) {
+    const tn = add("t:" + t.id, isGen(t) ? "gterm" : "term", t.nordwave.label, t, dcol(t.department));
+    link(tn, G.byId.get("d:" + t.department), 70, 0.05, true);
+    if (t.tmf?.api) { const x = add("x:" + t.tmf.api, "tmf", t.tmf.api, { api: t.tmf.api }, "#7C8DA6"); link(tn, x, 80, 0.035); }
+    if (t.atlas?.domain) { const q = add("q:" + t.atlas.domain, "domain", t.atlas.domain, { domain: t.atlas.domain }, "#36E0AD"); link(tn, q, 85, 0.035); }
+    for (const c of t.capabilities) { const cn = add("c:" + c.id, "capability", c.id, c, c.status === "atlas-api" ? "#2FA67A" : "#F0A030"); link(tn, cn, 38, 0.06); }
+    for (const w of t.workflows) link(tn, G.byId.get("w:" + w), 110, 0.03);
+  }
+  for (const [from, rel, to] of D.relations ?? []) link(G.byId.get("t:" + from), G.byId.get("t:" + to), 95, 0.018, true);
+  const used = new Set(D.terms.flatMap(t => t.agents));
+  for (const a of D.agents.filter(a => used.has(a.key))) {
+    const an = add("a:" + a.key, "agent", a.name, a, dcol(a.department));
+    link(an, G.byId.get("d:" + a.department) ?? G.byId.get("d:Governance"), 90, 0.012, true);
+  }
+  for (const t of D.terms) for (const k of t.agents) link(G.byId.get("t:" + t.id), G.byId.get("a:" + k), 60, 0.05);
+  if (D.pack) {
+    for (const n of D.pack.nodes) add(n.id, n.kind, n.label, n, KINDS[n.kind]?.color ?? "#888");
+    const LEN = { "maps to": 70, "implemented by": 75, eligibility: 75, "writes via": 70, calls: 80, related: 110, homonym: 130, "same as": 90 };
+    for (const [a, rel, b, note] of D.pack.edges) {
+      const na = G.byId.get(a), nb = G.byId.get(b); if (!na || !nb) continue;
+      const before = G.links.length; link(na, nb, LEN[rel] ?? 60, rel === "homonym" ? 0.02 : 0.04, rel === "related");
+      if (G.links.length > before) Object.assign(G.links[G.links.length - 1], { rel, note, homonym: rel === "homonym" });
+    }
+  }
+  G.adj = new Map(G.nodes.map(n => [n.id, new Set()]));
+  for (const l of G.links) { G.adj.get(l.a.id).add(l.b.id); G.adj.get(l.b.id).add(l.a.id); }
+  G.built = true; G.alpha = 1;
+}
+
+function visible(n) {
+  if (!G.on[n.kind]) return false;
+  if ((n.kind === "term" || n.kind === "gterm" || n.kind === "agent") && !deptOn.has(n.data.department)) return false;
+  if (n.kind === "dept" && !deptOn.has(n.label)) return false;
+  if (KINDS[n.kind]?.pack) return true;
+  if (n.kind === "capability" || n.kind === "tmf" || n.kind === "domain") return [...G.adj.get(n.id)].some(id => visible(G.byId.get(id)) && ["term", "gterm"].includes(G.byId.get(id).kind));
+  return true;
+}
+const matches = (n) => !query || [n.label, n.id, ...(n.kind === "term" || n.kind === "gterm" ? [...n.data.nordwave.synonyms, n.data.tmf.concept ?? "", n.data.tmf.api ?? ""] : KINDS[n.kind]?.pack ? [...(n.data.data?.synonyms ?? []), ...(n.data.data?.aliases ?? [])] : [])].some(s => String(s).toLowerCase().includes(query));
+
+function tick() {
+  const N = G.nodes, a = G.alpha;
+  const vis = N.filter(visible);
+  for (let i = 0; i < vis.length; i++) for (let j = i + 1; j < vis.length; j++) {
+    const p = vis[i], q = vis[j]; let dx = p.x - q.x, dy = p.y - q.y, d2 = dx * dx + dy * dy || 0.01;
+    if (d2 > 90000) continue;
+    const f = (p.kind === "dept" || q.kind === "dept" ? 5200 : 2300) / d2 * a, d = Math.sqrt(d2);
+    dx /= d; dy /= d; p.vx += dx * f; p.vy += dy * f; q.vx -= dx * f; q.vy -= dy * f;
+  }
+  for (const l of G.links) {
+    if (!visible(l.a) || !visible(l.b)) continue;
+    const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.sqrt(dx * dx + dy * dy) || 0.01, f = (d - l.len) * l.k * Math.max(a, 0.15);
+    l.a.vx += dx / d * f; l.a.vy += dy / d * f; l.b.vx -= dx / d * f; l.b.vy -= dy / d * f;
+  }
+  for (const n of vis) {
+    n.vx -= n.x * 0.0065 * Math.max(a, 0.25); n.vy -= n.y * 0.0065 * Math.max(a, 0.25);
+    if (G.animate) { n.vx += Math.sin(G.t * 0.9 + n.phase) * 0.014; n.vy += Math.cos(G.t * 0.8 + n.phase * 1.3) * 0.014; } // slow breathing
+    if (G.drag === n) { n.vx = n.vy = 0; continue; }
+    n.vx *= 0.82; n.vy *= 0.82; n.x += n.vx; n.y += n.vy;
+  }
+  G.alpha = Math.max(G.animate ? 0.12 : 0, G.alpha * 0.992);
+}
+
+function frame() {
+  G.raf = requestAnimationFrame(frame);
+  if (view !== "graph") return;
+  G.t += 0.016;
+  if (G.animate || G.alpha > 0.02 || G.drag) tick();
+  paint();
+}
+
+function paint() {
+  const cv = document.getElementById("gcanvas"), ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+  const box = cv.parentElement.getBoundingClientRect(); const w = Math.max(320, Math.floor(box.width)), h = Math.max(300, Math.floor(box.height));
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; G.w = w; G.h = h; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  ctx.save(); ctx.translate(w / 2 + G.tx, h / 2 + G.ty); ctx.scale(G.scale, G.scale);
+  const ink = css("--foreground"), edge = css("--edge"), accent = css("--ring"), surface = css("--card");
+  const focusId = G.hover ?? sel; const focus = focusId ? new Set([focusId, ...(G.adj.get(focusId) ?? [])]) : null;
+  const dimmed = (n) => (focus && !focus.has(n.id)) || (query && !matches(n));
+  for (const l of G.links) {
+    if (!visible(l.a) || !visible(l.b)) continue;
+    const hot = focus && focus.has(l.a.id) && focus.has(l.b.id) && (l.a.id === focusId || l.b.id === focusId);
+    ctx.globalAlpha = hot ? 1 : l.homonym ? ((focus || query) ? 0.25 : 0.85) : (focus || query) ? 0.07 : (l.faint ? 0.18 : 0.42);
+    ctx.strokeStyle = l.homonym ? "#E11D48" : hot ? accent : edge; ctx.lineWidth = (hot || l.homonym ? 2 : 1) / G.scale;
+    ctx.setLineDash(l.homonym ? [6 / G.scale, 4 / G.scale] : []);
+    ctx.beginPath(); ctx.moveTo(l.a.x, l.a.y); ctx.lineTo(l.b.x, l.b.y); ctx.stroke(); ctx.setLineDash([]);
+  }
+  for (const n of G.nodes) {
+    if (!visible(n)) continue;
+    const r = KINDS[n.kind].r * (n.kind === "agent" && n.data.status === "live" ? 1.5 : 1), dim = dimmed(n);
+    ctx.globalAlpha = dim ? 0.16 : 1; ctx.fillStyle = cssColor(n.color);
+    ctx.beginPath();
+    if (n.kind === "tmf") ctx.rect(n.x - r, n.y - r, r * 2, r * 2);
+    else if (n.kind === "action") { ctx.moveTo(n.x, n.y - r * 1.2); ctx.lineTo(n.x + r * 1.1, n.y + r * 0.8); ctx.lineTo(n.x - r * 1.1, n.y + r * 0.8); ctx.closePath(); }
+    else if (n.kind === "view-group" || n.kind === "gold-table") ctx.rect(n.x - r, n.y - r * 0.7, r * 2, r * 1.4);
+    else if (n.kind === "domain") { ctx.moveTo(n.x, n.y - r * 1.2); ctx.lineTo(n.x + r * 1.2, n.y); ctx.lineTo(n.x, n.y + r * 1.2); ctx.lineTo(n.x - r * 1.2, n.y); ctx.closePath(); }
+    else ctx.arc(n.x, n.y, r, 0, 6.283);
+    ctx.fill();
+    if (n.data?.data?.phantom) { ctx.fillStyle = surface; ctx.beginPath(); ctx.arc(n.x, n.y, r * 0.55, 0, 6.283); ctx.fill(); }   // phantom: documented but not yet a column
+    if (n.kind === "action" && n.data?.data?.risk === "high") { ctx.lineWidth = 2 / G.scale; ctx.strokeStyle = "#E11D48"; ctx.stroke(); }
+    if (n.kind === "gterm") { ctx.fillStyle = surface; ctx.fill(); ctx.strokeStyle = cssColor(n.color); ctx.lineWidth = 2 / G.scale; ctx.stroke(); }   // hollow ring: general knowledge, not Nordwave-specific
+    if (n.id === sel || n.id === G.hover) { ctx.globalAlpha = 1; ctx.lineWidth = 2.5 / G.scale; ctx.strokeStyle = n.id === sel ? accent : ink; ctx.stroke(); }
+    const show = n.id === focusId || (focus && focus.has(n.id) && n.kind !== "capability") || ((n.kind === "dept" || n.kind === "workflow" || n.kind === "tmf" || n.kind === "domain") && !dim) || ((n.kind === "term" || n.kind === "gterm") && G.scale > 0.85 && !dim) || (n.kind === "agent" && G.scale > 1.5 && !dim) || (["pack-term", "persona", "analytics-concept", "view-group", "analytics-policy", "capability-gap", "action"].includes(n.kind) && G.scale > 0.85 && !dim) || (KINDS[n.kind]?.pack && G.scale > 1.8 && !dim) || (n.kind === "capability" && G.scale > 2.2 && !dim);
+    if (show) {
+      const fs = (n.kind === "dept" ? 13 : n.kind === "workflow" ? 12 : 10.5) / Math.min(1.3, Math.max(0.75, G.scale));
+      ctx.globalAlpha = dim ? 0.3 : 1; ctx.font = `${n.kind === "dept" || n.kind === "workflow" ? 600 : 500} ${fs}px Montserrat, system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      const label = n.label.length > 30 ? n.label.slice(0, 29) + "…" : n.label, ty = n.y + r + 3;
+      ctx.lineWidth = 3 / G.scale; ctx.strokeStyle = surface; ctx.strokeText(label, n.x, ty); ctx.fillStyle = ink; ctx.fillText(label, n.x, ty);
+    }
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+
+function fitView() {
+  const vis = G.nodes.filter(visible); if (!vis.length) return;
+  const xs = vis.map(n => n.x).sort((a, b) => a - b), ys = vis.map(n => n.y).sort((a, b) => a - b), lo = Math.floor(vis.length * 0.03), hi = Math.ceil(vis.length * 0.97) - 1;
+  const x0 = xs[lo], x1 = xs[hi], y0 = ys[lo], y1 = ys[hi];   // trimmed, so one stray node cannot shrink the whole view
+  const cv = document.getElementById("gcanvas"), b = cv.getBoundingClientRect(), W = b.width || 800, H = b.height || 600;
+  G.scale = Math.min(1.6, Math.max(0.35, Math.min((W - 120) / Math.max(1, x1 - x0), (H - 120) / Math.max(1, y1 - y0))));
+  G.tx = -((x0 + x1) / 2) * G.scale + 70; G.ty = -((y0 + y1) / 2) * G.scale;   // the control box sits on the left, so shift right a little
+}
+function graphPoint(ev) { const cv = document.getElementById("gcanvas"), b = cv.getBoundingClientRect(); return { x: (ev.clientX - b.left - G.w / 2 - G.tx) / G.scale, y: (ev.clientY - b.top - G.h / 2 - G.ty) / G.scale }; }
+function nodeAt(ev) {
+  const p = graphPoint(ev); let best = null, bd = 1e9;
+  for (const n of G.nodes) { if (!visible(n)) continue; const r = KINDS[n.kind].r * (n.kind === "agent" && n.data.status === "live" ? 1.5 : 1) + 4 / G.scale, d = Math.hypot(n.x - p.x, n.y - p.y); if (d < r && d < bd) { best = n; bd = d; } }
+  return best;
+}
+function initGraphInput() {
+  const cv = document.getElementById("gcanvas"); let moved = 0;
+  cv.addEventListener("pointerdown", (e) => { cv.setPointerCapture(e.pointerId); moved = 0; const n = nodeAt(e); if (n) { G.drag = n; G.alpha = Math.max(G.alpha, 0.5); } else G.pan = { x: e.clientX, y: e.clientY, tx: G.tx, ty: G.ty }; cv.classList.add("grabbing"); });
+  cv.addEventListener("pointermove", (e) => {
+    if (G.drag) { const p = graphPoint(e); G.drag.x = p.x; G.drag.y = p.y; moved++; G.alpha = Math.max(G.alpha, 0.4); }
+    else if (G.pan) { G.tx = G.pan.tx + e.clientX - G.pan.x; G.ty = G.pan.ty + e.clientY - G.pan.y; moved++; }
+    else { const n = nodeAt(e); G.hover = n ? n.id : null; cv.style.cursor = n ? "pointer" : "grab"; }
+  });
+  cv.addEventListener("pointerup", (e) => { const n = G.drag; if (n && moved < 4) choose(n.id); else if (!n && moved < 4 && sel) { sel = null; history.replaceState(null, "", location.pathname + location.search); draw(); } G.drag = null; G.pan = null; cv.classList.remove("grabbing"); });
+  cv.addEventListener("pointerleave", () => { G.hover = null; });
+  cv.addEventListener("wheel", (e) => { e.preventDefault(); const f = Math.exp(-e.deltaY * 0.0012), p0 = graphPoint(e); G.scale = Math.min(4, Math.max(0.3, G.scale * f)); const b = cv.getBoundingClientRect(); G.tx = e.clientX - b.left - G.w / 2 - p0.x * G.scale; G.ty = e.clientY - b.top - G.h / 2 - p0.y * G.scale; }, { passive: false });
+}
+function buildControls() {
+  const c = document.getElementById("gctl");
+  const head = h("button", { type: "button", class: "gctl-head", "aria-expanded": "true" }, "Show ▾");
+  head.onclick = () => { const open = c.classList.toggle("collapsed") === false; head.setAttribute("aria-expanded", open); head.textContent = open ? "Show ▾" : "Show ▸"; };
+  c.replaceChildren(head);
+  if ((c.parentElement?.getBoundingClientRect().width ?? 1200) < 900) { c.classList.add("collapsed"); head.setAttribute("aria-expanded", "false"); head.textContent = "Show ▸"; }
+  for (const [k, v] of Object.entries(KINDS)) {
+    const cb = h("input", { type: "checkbox" }); cb.checked = G.on[k]; cb.onchange = () => { G.on[k] = cb.checked; G.alpha = Math.max(G.alpha, 0.7); };
+    if (v.pack && !D.pack) continue;
+    if (v.pack && k === "pack-term") c.append(h("h4", { text: "generic pack", style: "margin-top:8px" }));
+    const col = v.color ?? { dept: "var(--d-care)", workflow: "var(--ring)", term: "var(--d-marketing)", gterm: "var(--d-marketing)", agent: "var(--d-network)", tmf: "#7C8DA6", domain: "#36E0AD", capability: "#F0A030" }[k];
+    c.append(h("label", {}, cb, h("i", { style: `background:${col}` }), v.label));
+  }
+  const pause = h("button", { type: "button", text: "Pause motion" }); pause.onclick = () => { G.animate = !G.animate; pause.textContent = G.animate ? "Pause motion" : "Resume motion"; G.alpha = Math.max(G.alpha, 0.3); };
+  const reset = h("button", { type: "button", text: "Reset layout" }); reset.onclick = () => { G.scale = 1; G.tx = G.ty = 0; for (const n of G.nodes) { const a = rng() * 6.283, d = 80 + rng() * 240; n.x = Math.cos(a) * d; n.y = Math.sin(a) * d; n.vx = n.vy = 0; } G.alpha = 1; for (let i = 0; i < 220; i++) tick(); fitView(); };
+  c.append(h("div", { class: "row" }, pause, reset));
+  if (D.pack) {
+    const preset = (on) => { for (const k of Object.keys(KINDS)) G.on[k] = on(k); c.querySelectorAll("input[type=checkbox]").forEach((cb, i) => { cb.checked = G.on[Object.keys(KINDS).filter(k => !KINDS[k].pack || D.pack)[i]]; }); G.alpha = Math.max(G.alpha, 0.8); setTimeout(fitView, 600); };
+    const all = h("button", { type: "button", text: "Show everything" }); all.onclick = () => preset(() => true);
+    const core = h("button", { type: "button", text: "ATLAS AI Labs only" }); core.onclick = () => preset((k) => !KINDS[k].pack && k !== "capability");
+    c.append(h("div", { class: "row" }, all, core), h("div", { style: "font-size:11px;color:var(--muted-foreground);margin-top:4px", text: "Red dashed line = same word, different meaning" }));
+  }
+}
+function setView(v) {
+  view = v; document.body.classList.toggle("view-graph", v === "graph");
+  document.getElementById("tab-graph").setAttribute("aria-pressed", v === "graph"); document.getElementById("tab-map").setAttribute("aria-pressed", v === "map");
+  const u = new URL(location.href); if (v === "map") u.searchParams.set("view", "map"); else u.searchParams.delete("view"); history.replaceState(null, "", u);
+  if (v === "graph" && !G.built) { buildGraph(); buildControls(); initGraphInput(); }
+  if (v === "graph") G.alpha = Math.max(G.alpha, 0.5);
+  draw();
+}
+function graphBoot() {
+  document.getElementById("tab-graph").onclick = () => setView("graph");
+  document.getElementById("tab-map").onclick = () => setView("map");
+  setView(view);
+  if (!G.raf) frame();
+  // let the layout settle before the first paint of a fresh page
+  for (let i = 0; i < 220; i++) tick();
+  fitView();
+}
+
+document.getElementById("theme").onclick = () => {
+  const dark = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", dark);
+  try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch (e) {}
+  document.getElementById("theme-label").textContent = dark ? "Light mode" : "Dark mode";
+};
+document.getElementById("theme-label").textContent = document.documentElement.classList.contains("dark") ? "Light mode" : "Dark mode";
+boot().then(graphBoot).catch(e => { document.getElementById("panel").textContent = "Could not load the ontology: " + e.message; });
+</script>
+<script src="/shared/platform-nav.js"></script>
+</body>
+</html>

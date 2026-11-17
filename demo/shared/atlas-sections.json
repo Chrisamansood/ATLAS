@@ -1,0 +1,101 @@
+{
+  "_note": "Local ATLAS demo navigation. No external services are required.",
+  "sections": [
+    {
+      "id": "home",
+      "label": "Home",
+      "items": [
+        {
+          "key": "hive",
+          "label": "HIVE",
+          "href": "/hive",
+          "icon": "hive"
+        },
+        {
+          "key": "agents",
+          "label": "Agent roster",
+          "href": "/organization",
+          "icon": "agents"
+        }
+      ]
+    },
+    {
+      "id": "twin",
+      "label": "Proving Ground",
+      "items": [
+        {
+          "key": "twin",
+          "label": "Rehearsal & replay",
+          "href": "/twin",
+          "icon": "twin"
+        },
+        {
+          "key": "live",
+          "label": "Twin Live",
+          "href": "/twin/live",
+          "icon": "live"
+        },
+        {
+          "key": "catalogue",
+          "label": "Product catalogue",
+          "href": "/twin/catalogue",
+          "icon": "catalogue"
+        },
+        {
+          "key": "office",
+          "label": "Billing back office",
+          "href": "/twin/office",
+          "icon": "office"
+        },
+        {
+          "key": "crm",
+          "label": "Customer workspace",
+          "href": "/twin/crm",
+          "icon": "crm"
+        },
+        {
+          "key": "apis",
+          "label": "Twin API desk",
+          "href": "/twin/live#apis",
+          "icon": "apis"
+        }
+      ]
+    },
+    {
+      "id": "decisions",
+      "label": "Telco decision models",
+      "items": [
+        {
+          "key": "decisions",
+          "label": "Decision economics",
+          "href": "/decisions",
+          "icon": "decisions"
+        }
+      ]
+    },
+    {
+      "id": "ontology",
+      "label": "Ontologies",
+      "items": [
+        {
+          "key": "ontology",
+          "label": "Telco Ontology",
+          "href": "/",
+          "icon": "ontology"
+        },
+        {
+          "key": "ontology-banking",
+          "label": "Banking Ontology",
+          "href": "/?industry=banking",
+          "icon": "ontology"
+        },
+        {
+          "key": "ontology-healthcare",
+          "label": "Healthcare Ontology",
+          "href": "/?industry=healthcare",
+          "icon": "ontology"
+        }
+      ]
+    }
+  ]
+}

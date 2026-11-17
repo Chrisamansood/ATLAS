@@ -16,6 +16,23 @@ agent-framework integrations, payment connections, or network integrations.
 The current patch tightens action scope and human-review validation. See
 [project status and next steps](docs/STATUS.md) and the [changelog](CHANGELOG.md).
 
+## HIVE and Proving Ground demo
+
+The repository also includes a standalone ATLAS edition of the personal HIVE
+and Proving Ground demo. It retains five HIVE themes, synthetic agent roles,
+a BSS twin, replay comparisons, a credit sandbox, catalogue, customer workspace
+and ontology explorer. No Docker, model keys or package installation is needed.
+
+With Node.js 22 or newer:
+
+```sh
+npm --prefix demo start
+```
+
+Open **http://localhost:3500/hive**. See [demo setup and scope](demo/README.md).
+The demo's Node twin policies are separate from the Python ATLAS trust gateway;
+the UI is not yet connected to the gateway. All demo records are synthetic.
+
 ## Quick start
 
 Python 3.11 or newer is required. From the repository root:

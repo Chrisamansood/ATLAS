@@ -1,0 +1,105 @@
+{
+  "_comment": "Single source for every policy number in the skill pack, the Sim workflows and (from M1) policy.yaml. Edit here only.",
+  "currency": "EUR",
+  "goodwill_credit": {
+    "cap": "25.00",
+    "above_cap": "needs Care Lead approval",
+    "cap_table": {
+      "prepaid": {
+        "0-11": "5.00",
+        "12-35": "10.00",
+        "36+": "15.00"
+      },
+      "postpaid": {
+        "0-11": "15.00",
+        "12-35": "25.00",
+        "36+": "35.00"
+      },
+      "business": {
+        "0-11": "40.00",
+        "12-35": "50.00",
+        "36+": "75.00"
+      }
+    },
+    "max_credits_per_12_months": 2
+  },
+  "retention": {
+    "max_discount_percent": 15,
+    "needs_approval_above_percent": 15,
+    "ladder": [
+      {
+        "min_risk": 0.0,
+        "max_discount_percent": 0
+      },
+      {
+        "min_risk": 0.5,
+        "max_discount_percent": 5
+      },
+      {
+        "min_risk": 0.7,
+        "max_discount_percent": 10
+      },
+      {
+        "min_risk": 0.85,
+        "max_discount_percent": 15
+      }
+    ]
+  },
+  "outage": {
+    "compensation": {
+      "P1": {
+        "min_hours": 4,
+        "credit": "5.00"
+      },
+      "P2": {
+        "min_hours": 12,
+        "credit": "2.50"
+      },
+      "P3": null
+    },
+    "channels": {
+      "P1": "sms+email+status-page",
+      "P2": "email+status-page",
+      "P3": "status-page"
+    }
+  },
+  "consent": {
+    "quiet_hours_start": 21,
+    "quiet_hours_end": 8
+  },
+  "cost": {
+    "tiers": {
+      "classify": "small",
+      "extract": "small",
+      "draft": "medium",
+      "plan": "large",
+      "reason": "large"
+    },
+    "downgrade_above_percent": 80,
+    "block_above_percent": 100
+  },
+  "orders": {
+    "stuck_after_hours": {
+      "payment": 2,
+      "number": 4,
+      "esim": 6,
+      "activation": 8
+    }
+  },
+  "twin": {
+    "certify": {
+      "max_violations": 0,
+      "max_human_queue_percent": 60,
+      "bill_shock_credit_budget_eur": "3000.00",
+      "retention_discount_budget_eur": "20000.00"
+    },
+    "retention_accept_percent": {
+      "0": 5,
+      "5": 25,
+      "10": 45,
+      "15": 60,
+      "20": 70,
+      "30": 80
+    }
+  }
+}
