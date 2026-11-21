@@ -13,7 +13,7 @@ if (!/^\/[a-zA-Z0-9/_-]*\/$/.test(base)) throw new Error('Expected an absolute b
 rmSync(out, {recursive:true, force:true}); mkdirSync(out, {recursive:true});
 const write = (p,s) => { const target=resolve(out,p); mkdirSync(dirname(target),{recursive:true}); writeFileSync(target,s); };
 function publicText(text) {
-  return text.replace('Agents that speak MCP use ', 'Browser-local MCP simulation: ').replace(' with their own token; calls appear in the Agent sandbox log.', ' — this public site does not expose a remote MCP server. Calls appear in the sandbox log.').replace('curl ${location.origin}', 'Browser demo: ${location.origin}').replace(/(["'`])\/(hive|twin|organization|data|shared|decisions|api|mock)(?=[/?#"'`])/g, `$1${base}$2`)
+  return text.replace('Agents that speak MCP use ', 'Browser-local MCP simulation: ').replace(' with their own token; calls appear in the Agent sandbox log.', ' — this public site does not expose a remote MCP server. Calls appear in the sandbox log.').replace('curl ${location.origin}', 'Browser demo: ${location.origin}').replace(/(["'`])\/(hive|twin|organization|campaign|data|shared|decisions|api|mock)(?=[/?#"'`])/g, `$1${base}$2`)
     .replace(/href="\/(\?|"|#)/g, `href="${base}ontology/$1`)
     .replace('s.value === "telco" ? "/" : `/?industry=', `s.value === "telco" ? "${base}ontology/" : \`${base}ontology/?industry=`);
 }
@@ -33,7 +33,7 @@ const walk = dir => { for (const entry of readdirSync(resolve(root,dir),{withFil
     write(`engine/${p}`, s);
   }
 } };
-for (const dir of ['seed','skills','hive','twin','ontology','decision','shared']) walk(dir);
+for (const dir of ['seed','skills','hive','twin','ontology','decision','shared','campaign']) walk(dir);
 // Only this server entrypoint; never bundle build scripts or working files.
 let server = readFileSync(resolve(root,'scripts/ontology-serve.mjs'),'utf8').replace(/from "node:(fs|url|http)"/g, 'from "../../runtime.mjs"').replace(/process\.env/g,'({})');
 server = server.replace('const root =', 'export function startServer() {\nconst root =') + '\n}';
@@ -43,8 +43,10 @@ write('files.json', JSON.stringify(files));
 for (const p of ['runtime.mjs','service-worker.mjs','bootstrap.js']) write(p,readFileSync(resolve(root,'web',p),'utf8'));
 const sphere = html(renderTheme(resolve(root,'hive/ui')+'/', 'sphere'));
 write('index.html',sphere); write('hive/index.html',sphere);
-for (const [route,source] of Object.entries({ontology:'ontology/index.html',organization:'hive/ui/organization.html',decisions:'decision/ui/index.html',twin:'twin/ui/index.html','twin/live':'twin/ui/live.html','twin/office':'twin/ui/office.html','twin/crm':'twin/ui/crm.html','twin/catalogue':'twin/ui/catalogue.html','hive/v3':'hive/ui/index.html'})) write(`${route}/index.html`, html(readFileSync(resolve(root,source),'utf8')));
+for (const [route,source] of Object.entries({ontology:'ontology/index.html',campaign:'campaign/index.html',organization:'hive/ui/organization.html',decisions:'decision/ui/index.html',twin:'twin/ui/index.html','twin/live':'twin/ui/live.html','twin/office':'twin/ui/office.html','twin/crm':'twin/ui/crm.html','twin/catalogue':'twin/ui/catalogue.html','hive/v3':'hive/ui/index.html'})) write(`${route}/index.html`, html(readFileSync(resolve(root,source),'utf8')));
 write('shared/platform-nav.js',publicText(readFileSync(resolve(root,'shared/platform-nav.js'),'utf8')));
+for (const asset of ['app.js','replay.js','recording.js','roster.json']) write(`campaign/${asset}`,publicText(readFileSync(resolve(root,`campaign/${asset}`),'utf8')));
+for (const asset of ['atlas-brag.mp4','atlas-brag.jpg']) write(`campaign/media/${asset}`,readFileSync(resolve(root,`campaign/media/${asset}`)));
 write('decisions/replay.mjs',readFileSync(resolve(root,'decision/lib/replay.mjs'),'utf8'));
 const version = createHash('sha256').update(JSON.stringify(files)).update(server).digest('hex').slice(0,16);
 write('service-worker.mjs', readFileSync(resolve(root,'web/service-worker.mjs'),'utf8') + `\n// Build ${version}\n`);

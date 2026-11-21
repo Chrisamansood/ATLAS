@@ -102,6 +102,22 @@ const server = createServer(async (req, res) => {
     } else if (path === "/organization" || path === "/organization/") {
       res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
       res.end(readFileSync(`${root}hive/ui/organization.html`));
+    } else if (path === "/campaign" || path === "/campaign/") {
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+      res.end(readFileSync(`${root}campaign/index.html`));
+    } else if (path === "/campaign/media/atlas-brag.mp4" || path === "/campaign/media/atlas-brag.jpg") {
+      const content = readFileSync(`${root}${path.slice(1)}`);
+      const type = path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg';
+      const range = /bytes=(\d+)-(\d*)/.exec(req.headers.range || '');
+      if (range) {
+        const start = Number(range[1]);
+        const end = Math.min(range[2] ? Number(range[2]) : content.length - 1, content.length - 1);
+        if (start > end || start >= content.length) { res.writeHead(416, { 'content-range': `bytes */${content.length}` }); res.end(); }
+        else { res.writeHead(206, { 'content-type': type, 'accept-ranges': 'bytes', 'content-range': `bytes ${start}-${end}/${content.length}`, 'content-length': end-start+1 }); res.end(content.subarray(start,end+1)); }
+      } else { res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes', 'content-length': content.length }); res.end(content); }
+    } else if (["/campaign/app.js", "/campaign/replay.js", "/campaign/recording.js", "/campaign/roster.json"].includes(path)) {
+      res.writeHead(200, { "content-type": path.endsWith(".json") ? "application/json" : "text/javascript; charset=utf-8", "cache-control": "no-store" });
+      res.end(readFileSync(`${root}${path.slice(1)}`));
     } else if (path === "/data/roster.json") {
       json(res, 200, read("seed/nordwave-roster.json"));
     } else if (path === "/hive" || path === "/hive/") {
