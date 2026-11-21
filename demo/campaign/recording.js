@@ -1,0 +1,6 @@
+// Optional recording aid. Marks actual browser pointer events only.
+if(new URLSearchParams(location.search).get('record')==='1'){
+ const style=document.createElement('style');style.textContent='.record-pointer{position:fixed;width:23px;height:23px;border:2px solid #36e0ad;border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);box-shadow:0 0 0 5px #36e0ad22;display:none}.record-click{animation:record-click .45s ease-out}.record-label{position:fixed;right:18px;bottom:10px;z-index:9999;padding:5px 9px;border:1px solid #3b5148;background:#151a17;color:#84b9a5;font:9px monospace;letter-spacing:1px;pointer-events:none}@keyframes record-click{0%{box-shadow:0 0 0 4px #36e0ad88}100%{box-shadow:0 0 0 24px #36e0ad00}}';document.head.append(style);
+ const dot=document.createElement('div');dot.className='record-pointer';document.body.append(dot);const label=document.createElement('div');label.className='record-label';label.textContent='CODEX · BROWSER CONTROL';document.body.append(label);
+ addEventListener('pointermove',e=>{dot.style.display='block';dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px'});addEventListener('pointerdown',e=>{dot.style.display='block';dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';dot.classList.remove('record-click');void dot.offsetWidth;dot.classList.add('record-click')});
+}

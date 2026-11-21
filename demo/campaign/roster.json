@@ -1,0 +1,77 @@
+{
+  "note": "Seeded catalogue specialist roles for the synthetic campaign replay; not evidence of running agents.",
+  "agents": [
+    {
+      "key": "competitor-supervisor",
+      "name": "Competitor Supervisor",
+      "title": "Competitor Scan \u00b7 Insights",
+      "capabilities": "Scans competitor offers on the web, checks the catalogue for similar offers and recommends VALUE, MATCH and PREMIUM options; creates the chosen one as a DRAFT.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "product-simplifier",
+      "name": "Product Simplifier",
+      "title": "Insights \u00b7 Clustering \u00b7 Data Steward \u00b7 Simulation",
+      "capabilities": "Finds duplicate, dead and outlier offers, clusters the catalogue around hero offers and gives migration paths with their impact. Read-only.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "catalog-governor",
+      "name": "Catalog Governor",
+      "title": "Auditor \u00b7 Read access \u00b7 Publish handoff",
+      "capabilities": "Reviews DRAFT offers and audits the live catalogue (completeness, consistency, duplication, compliance); hands PASS offers to release. Read-only.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "product-configurator",
+      "name": "Product Configurator (B2C)",
+      "title": "Configurator \u00b7 Technical Enabler \u00b7 Simulation",
+      "capabilities": "Turns a plain-language request into a valid consumer plan, validates it against catalogue rules and creates it as a DRAFT.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "pricing-strategist",
+      "name": "Pricing and Monetisation Strategist",
+      "title": "Pricing and margin simulation \u00b7 Insights",
+      "capabilities": "Models LOW, BASE and HIGH price scenarios with margin, payback and cannibalisation and recommends a price point. Read-only.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "marketing-agent",
+      "name": "Marketing",
+      "title": "Content Generator \u00b7 Competitor Scan \u00b7 Insights",
+      "capabilities": "Writes a launch kit (positioning, headline, SMS, social, banner) from catalogue facts and competitor context, with a compliance check. Read-only.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "retainer-upseller",
+      "name": "Retainer and Upseller",
+      "title": "Insights \u00b7 Churn ML \u00b7 Content Generator \u00b7 Simulation",
+      "capabilities": "Scores churn risk and upsell signals across the customer base and matches each customer to a catalogue offer or add-on. Read-only.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    },
+    {
+      "key": "campaign-designer",
+      "name": "Campaign Designer",
+      "title": "Campaign artwork",
+      "capabilities": "Builds social, story and banner artwork from reviewed offer facts.",
+      "reportsTo": "catalogue",
+      "department": "Catalogue specialists",
+      "status": "seeded replay role"
+    }
+  ]
+}

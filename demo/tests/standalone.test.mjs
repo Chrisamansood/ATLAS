@@ -31,7 +31,7 @@ after(async () => {
 });
 
 test('all included screens and five themes work without external services', async () => {
-  const paths = ['/', '/organization', '/twin', '/twin/live', '/twin/office', '/twin/catalogue', '/twin/crm', '/decisions', ...['sphere','constellation','globe','hud','swarm'].map(t => `/hive?theme=${t}`)];
+  const paths = ['/', '/organization', '/campaign', '/twin', '/twin/live', '/twin/office', '/twin/catalogue', '/twin/crm', '/decisions', ...['sphere','constellation','globe','hud','swarm'].map(t => `/hive?theme=${t}`)];
   for (const path of paths) {
     const r = await fetch(base + path); assert.equal(r.status, 200, path);
     const html = await r.text(); assert.match(html, /ATLAS/, path);
@@ -70,4 +70,19 @@ test('HIVE shows actual pending sandbox reviews with local links', () => {
   assert.equal(payload.org.attention.total, 1);
   assert.equal(payload.org.attention.items[0].href, '/twin/live#sandbox');
   assert.ok(payload.org.tree.departments.every(d => d.lead.href.startsWith('/organization#')));
+});
+
+
+test('campaign assets are served with expected content types and a valid specialist hierarchy', async () => {
+  for (const path of ['/campaign/app.js','/campaign/replay.js','/campaign/recording.js']) {
+    const response = await fetch(base + path); assert.equal(response.status,200,path);
+    assert.match(response.headers.get('content-type'), /javascript/);
+  }
+  const original = await (await fetch(base + '/data/roster.json')).json();
+  const extra = await (await fetch(base + '/campaign/roster.json')).json();
+  assert.equal(original.agents.length,31); assert.equal(extra.agents.length,8);
+  const all = [...original.agents,...extra.agents], keys = new Set(all.map(a=>a.key));
+  assert.equal(keys.size,39);
+  for (const a of all) if(a.reportsTo) assert.ok(keys.has(a.reportsTo));
+  assert.ok(extra.agents.every(a=>a.reportsTo==='catalogue'));
 });

@@ -13,9 +13,15 @@
         },
         {
           "key": "agents",
-          "label": "Agent roster",
+          "label": "Organization",
           "href": "/organization",
           "icon": "agents"
+        },
+        {
+          "key": "campaign",
+          "label": "Campaign replay",
+          "href": "/campaign",
+          "icon": "catalogue"
         }
       ]
     },

@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== location.origin || !url.pathname.startsWith(base)) return;
   let path = '/' + url.pathname.slice(base.length).replace(/\/$/, '');
-  if (/^\/(engine|files\.json|runtime\.mjs|service-worker\.mjs|bootstrap\.js|favicon\.ico)/.test(path)) return;
+  if (/^\/(engine|files\.json|runtime\.mjs|service-worker\.mjs|bootstrap\.js|favicon\.ico)/.test(path) || path.startsWith('/campaign/media/')) return;
   if (path === '/' || path === '/index.html') path = '/hive';
   if (path === '/ontology') path = '/';
   event.respondWith((async () => {
